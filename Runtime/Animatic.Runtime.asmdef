@@ -1,3 +1,16 @@
 {
-	"name": "Animatic.Runtime"
+    "name": "Animatic.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "Common.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
