@@ -17,7 +17,7 @@ namespace Animatic
         public AnimationClip Clip;
         public SpeedClip[] SpeedClips;
         public bool Loop;
-        public AnimationClipPlayable Playable;
+        private AnimationClipPlayable clipPlayable;
         private float passTime;
         private int playIndex;
         private int loopCount;
@@ -29,15 +29,17 @@ namespace Animatic
             if (passTime > SpeedClips[playIndex].ScaleDuration)
             {
                 passTime -= SpeedClips[playIndex].ScaleDuration;
+                passTime /= SpeedClips[playIndex].Speed;
                 int preIndex = playIndex++;
+                passTime *= SpeedClips[playIndex].Speed;
                 if (playIndex >= SpeedClips.Length)
                 {
                     playIndex = 0;
                     loopCount++;
                     if (!Loop)
                     {
-                        Playable.SetTime(SpeedClips[preIndex].StatTime + SpeedClips[preIndex].Duration);
-                        Playable.SetSpeed(0);
+                        clipPlayable.SetTime(SpeedClips[preIndex].StatTime + SpeedClips[preIndex].Duration);
+                        clipPlayable.SetSpeed(0);
                         return;
                     }
                 }
@@ -49,8 +51,8 @@ namespace Animatic
         {
             monitorPlayable = ScriptPlayable<ClipMonitorPlayable>.Create(graph, 1);
             monitorPlayable.GetBehaviour().Owner = this;
-            Playable = AnimationClipPlayable.Create(graph, Clip);
-            monitorPlayable.ConnectInput(0, Playable, 0);
+            clipPlayable = AnimationClipPlayable.Create(graph, Clip);
+            monitorPlayable.ConnectInput(0, clipPlayable, 0);
         }
 
         public void Connect<V>(V destination, int destinationInputPort) where V : struct, IPlayable
@@ -68,9 +70,9 @@ namespace Animatic
 
         private void StartPlayCurrent()
         {
-            Playable.SetTime(SpeedClips[playIndex].StatTime + passTime);
-            Playable.SetDuration(SpeedClips[playIndex].Duration);
-            Playable.SetSpeed(SpeedClips[playIndex].Speed);
+            clipPlayable.SetTime(SpeedClips[playIndex].StatTime + passTime);
+            clipPlayable.SetDuration(SpeedClips[playIndex].Duration);
+            clipPlayable.SetSpeed(SpeedClips[playIndex].Speed);
         }
 
         public float GetTime()

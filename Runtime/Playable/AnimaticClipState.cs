@@ -2,14 +2,14 @@
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace Animatic.Runtime
+namespace Animatic
 {
     public class AnimaticClipState : IAnimaticState
     {
         public AnimationClip Clip;
         public float Speed = 1;
         public bool Loop;
-        public AnimationClipPlayable Playable;
+        private AnimationClipPlayable clipPlayable;
         private ScriptPlayable<ClipMonitorPlayable> monitorPlayable;
         private float passTime;
         private int loopCount;
@@ -24,15 +24,15 @@ namespace Animatic.Runtime
             ScaleDuration = Clip.length / Speed;
             monitorPlayable = ScriptPlayable<ClipMonitorPlayable>.Create(graph, 1);
             monitorPlayable.GetBehaviour().Owner = this;
-            Playable = AnimationClipPlayable.Create(graph, Clip);
-            monitorPlayable.ConnectInput(0, Playable, 0);
+            clipPlayable = AnimationClipPlayable.Create(graph, Clip);
+            monitorPlayable.ConnectInput(0, clipPlayable, 0);
         }
 
         public void Play()
         {
             loopCount = 0;
-            Playable.SetTime(0);
-            Playable.SetSpeed(Speed);
+            clipPlayable.SetTime(0);
+            clipPlayable.SetSpeed(Speed);
         }
 
         public float GetTime()
@@ -54,13 +54,13 @@ namespace Animatic.Runtime
                 if (!Loop)
                 {
                     passTime = ScaleDuration;
-                    Playable.SetTime(Clip.length);
-                    Playable.SetSpeed(0);
+                    clipPlayable.SetTime(Clip.length);
+                    clipPlayable.SetSpeed(0);
                     return;
                 }
                 loopCount++;
                 passTime -= ScaleDuration;
-                Playable.SetTime(passTime);
+                clipPlayable.SetTime(passTime);
             }
         }
     }

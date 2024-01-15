@@ -9,6 +9,7 @@ namespace Animatic
         void Play();
         float GetTime();
         int GetLoopCount();
-        public void OnPrareFrame(FrameData info);
+        void OnPrareFrame(FrameData info);
+        void SetBlendParam(float value) { }
     }
 }
