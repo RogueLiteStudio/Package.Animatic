@@ -17,6 +17,7 @@ namespace Animatic
         public AnimationClip Clip;
         public SpeedClip[] SpeedClips;
         public bool Loop;
+        public AnimaticMotion Motion { get; set; }
         private AnimationClipPlayable clipPlayable;
         private float passTime;
         private int playIndex;
@@ -86,5 +87,11 @@ namespace Animatic
         }
 
         public int GetLoopCount() { return loopCount; }
+
+        public void Destroy()
+        {
+            clipPlayable.Destroy();
+            monitorPlayable.Destroy();
+        }
     }
 }

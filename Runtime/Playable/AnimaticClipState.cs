@@ -9,6 +9,7 @@ namespace Animatic
         public AnimationClip Clip;
         public float Speed = 1;
         public bool Loop;
+        public AnimaticMotion Motion { get; set; }
         private AnimationClipPlayable clipPlayable;
         private ScriptPlayable<ClipMonitorPlayable> monitorPlayable;
         private float passTime;
@@ -62,6 +63,12 @@ namespace Animatic
                 passTime -= ScaleDuration;
                 clipPlayable.SetTime(passTime);
             }
+        }
+
+        public void Destroy()
+        {
+            clipPlayable.Destroy();
+            monitorPlayable.Destroy();
         }
     }
 }

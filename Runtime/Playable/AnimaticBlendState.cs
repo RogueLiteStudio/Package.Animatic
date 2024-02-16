@@ -11,7 +11,7 @@ namespace Animatic
         public float MaxThreshold;
         public bool Loop;
         public AnimaticBlendTree.Motion[] Motions;
-
+        public AnimaticMotion Motion { get; set; }
         private float duration;
         private float passTime;
         private float blendParam = float.MaxValue;
@@ -23,6 +23,16 @@ namespace Animatic
         public void Connect<V>(V destination, int destinationInputPort) where V : struct, IPlayable
         {
             destination.ConnectInput(destinationInputPort, monitorPlayable, 0);
+        }
+
+        public void Destroy()
+        {
+            for (int i = 0; i < clipPlayables.Length; ++i)
+            {
+                clipPlayables[i].Destroy();
+            }
+            monitorPlayable.Destroy();
+            mixerPlayable.Destroy();
         }
 
         public int GetLoopCount()

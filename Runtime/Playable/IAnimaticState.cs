@@ -4,6 +4,7 @@ namespace Animatic
 {
     public interface IAnimaticState
     {
+        AnimaticMotion Motion { get; set; }
         void Init(PlayableGraph graph);
         void Connect<V>(V destination, int destinationInputPort) where V : struct, IPlayable;
         void Play();
@@ -11,5 +12,6 @@ namespace Animatic
         int GetLoopCount();
         void OnPrareFrame(FrameData info);
         void SetBlendParam(float value) { }
+        void Destroy();
     }
 }

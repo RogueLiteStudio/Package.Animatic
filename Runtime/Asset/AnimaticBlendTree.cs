@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Animatic
 {
     [System.Serializable]
-    public class AnimaticBlendTree
+    public class AnimaticBlendTree : AnimaticMotion
     {
         [System.Serializable]
         public struct Motion
@@ -12,9 +12,6 @@ namespace Animatic
             public AnimationClip Clip;
             public float Threshold;
         }
-        public string GUID;
-        public string Name;
-        public bool Loop;
         public List<Motion> Motions = new List<Motion>();
     }
 }

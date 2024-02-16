@@ -5,8 +5,8 @@ namespace Animatic
 {
     public class AnimaticAsset : ScriptableObject
     {
-        public List<AnimaticMotion> Motions = new List<AnimaticMotion>();
-        public List<AnimaticTransition> Transition = new List<AnimaticTransition>();
+        public List<AnimaticClip> Clips = new List<AnimaticClip>();
         public List<AnimaticBlendTree> BlendTree = new List<AnimaticBlendTree>();
+        public List<AnimaticTransition> Transition = new List<AnimaticTransition>();
     }
 }
