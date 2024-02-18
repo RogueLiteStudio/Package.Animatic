@@ -15,7 +15,7 @@ namespace Animatic
         public AnimationClip Animation;
         public ScaleableClip[] Clips;
 
-        public float GetLength()
+        public override float GetLength()
         {
             if (Animation)
             {

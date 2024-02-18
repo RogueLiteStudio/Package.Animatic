@@ -6,5 +6,7 @@
         public string GUID;
         public string Name;
         public bool Loop;
+
+        public virtual float GetLength() {  return 0; }
     }
 }

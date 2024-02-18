@@ -13,5 +13,15 @@ namespace Animatic
             public float Threshold;
         }
         public List<Motion> Motions = new List<Motion>();
+
+        public override float GetLength()
+        {
+            foreach (var m in Motions)
+            {
+                if (m.Clip)
+                    return m.Clip.length;
+            }
+            return 0;
+        }
     }
 }
