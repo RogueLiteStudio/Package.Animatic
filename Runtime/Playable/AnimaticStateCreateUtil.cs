@@ -88,7 +88,7 @@ namespace Animatic
                 min = Mathf.Min(m.Threshold, min);
                 max = Mathf.Max(m.Threshold, max);
             }
-            AnimaticBlendTree.Motion[] motions = blendTree.Motions.Where(it=>it.Clip).ToArray();
+            AnimaticBlendTree.Motion[] motions = blendTree.Motions.Where(it=>it.Clip).OrderBy(it=>it.Threshold).ToArray();
             return new AnimaticBlendState 
             {
                 Motion = blendTree,

@@ -16,12 +16,18 @@ namespace Animatic
 
         public override float GetLength()
         {
+            float length = 0;
             foreach (var m in Motions)
             {
                 if (m.Clip)
-                    return m.Clip.length;
+                {
+                    if (length == 0)
+                        length = m.Clip.length;
+                    else
+                        length = Mathf.Min(length, m.Clip.length);
+                }
             }
-            return 0;
+            return length;
         }
     }
 }

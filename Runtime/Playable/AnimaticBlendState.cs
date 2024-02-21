@@ -110,13 +110,19 @@ namespace Animatic
             blendParam = value;
             for (int i=0; i<Motions.Length-1; ++i)
             {
-                if (value > Motions[i].Threshold)
-                    continue;
-                float range = Motions[i+1].Threshold - Motions[i].Threshold;
-                float w1 = (value - Motions[i].Threshold) / range;
-                float w2 = 1 - w1;
-                mixerPlayable.SetInputWeight(i, w1);
-                mixerPlayable.SetInputWeight(i+1, w2);
+                if (value >= Motions[i].Threshold && value <= Motions[i+1].Threshold)
+                {
+                    float range = Motions[i + 1].Threshold - Motions[i].Threshold;
+                    float w1 = (value - Motions[i].Threshold) / range;
+                    float w2 = 1 - w1;
+                    mixerPlayable.SetInputWeight(i, w1);
+                    mixerPlayable.SetInputWeight(i + 1, w2);
+                    ++i;
+                }
+                else
+                {
+                    mixerPlayable.SetInputWeight(i, 0);
+                }
             }
         }
     }
