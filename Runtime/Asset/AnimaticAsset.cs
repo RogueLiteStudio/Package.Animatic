@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Animatic
 {
+    [CreateAssetMenu(fileName = "AnimaticAsset", menuName = "Animatic/AnimaticAsset")]
     public class AnimaticAsset : ScriptableObject
     {
         public List<AnimaticClip> Clips = new List<AnimaticClip>();

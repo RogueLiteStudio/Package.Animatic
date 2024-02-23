@@ -17,8 +17,6 @@ namespace Animatic
         [SerializeField]
         private GameObject Object;
         [SerializeField]
-        private string currentName;
-        [SerializeField]
         private SimulateType simulateType;
 
         private PlayableGraph playableGraph;
@@ -177,6 +175,19 @@ namespace Animatic
                 }
             }
             return null;
+        }
+
+        public void ReBindTarget(AnimaticAsset asset, GameObject obj)
+        {
+            if (Asset == asset && obj == Object)
+                return;
+            simulateType = SimulateType.None;
+            Asset = asset;
+            Object = obj;
+            if (playableGraph.IsValid())
+            {
+                playableGraph.Destroy();
+            }
         }
 
         public static AnimaticSimulate Create(AnimaticAsset asset, GameObject obj)
