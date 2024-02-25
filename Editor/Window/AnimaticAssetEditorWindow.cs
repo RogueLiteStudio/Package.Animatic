@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualElementExtern;
 namespace Animatic
 {
     public class AnimaticAssetEditorWindow : EditorWindow
@@ -11,21 +12,23 @@ namespace Animatic
         {
             if (EditorUtility.InstanceIDToObject(instanceID) is AnimaticAsset asset)
             {
-                GetWindow<AnimaticAssetEditorWindow>().SetAsset(asset);
+                var window = GetWindow<AnimaticAssetEditorWindow>();
+                window.assetSelectField.SetValueWithoutNotify(asset);
+                window.SetAsset(asset);
                 return true;
             }
 
             return false;
         }
-        private System.Action reDrawFunc;
         private ObjectField assetSelectField;
         public AnimaticAsset Asset;
         public string SelectedGUID;
         public GameObject SimulateObject;
         public AnimaticSimulate Simulate;
+        private ScrollView leftScrollView;
+        private RadioButtonList buttonList;
 
         public Vector2 ListScrollPos;
-        public Vector2 ViewScrollPos;
 
         public void CreateGUI()
         {
@@ -33,22 +36,31 @@ namespace Animatic
             OnCreateToolBar(toolbar);
             rootVisualElement.Add(toolbar);
             var split = new TwoPaneSplitView(0, 200, TwoPaneSplitViewOrientation.Horizontal);
-            var motionListView = new IMGUIContainer(DrawMotionList);
-            split.Add(motionListView);
+            split.Add(leftScrollView = new ScrollView(ScrollViewMode.Vertical));
+            leftScrollView.scrollOffset = ListScrollPos;
+            leftScrollView.Add(buttonList = new RadioButtonList());
+            buttonList.OnSelect = OnSelect;
             var motionView = new IMGUIContainer(DrawMotionView);
-            reDrawFunc = () => { motionListView.MarkDirtyRepaint(); motionView.MarkDirtyRepaint(); };
             split.Add(motionView);
             rootVisualElement.Add(split);
+
+            DirtyRepaint();
+        }
+
+        private void Awake()
+        {
+            Simulate = AnimaticSimulate.Create();
         }
 
         private void OnEnable()
-        {
+        { 
             Undo.undoRedoPerformed += DirtyRepaint;
         }
 
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= DirtyRepaint;
+            ListScrollPos = leftScrollView.scrollOffset;
         }
 
         private void OnDestroy()
@@ -59,7 +71,22 @@ namespace Animatic
 
         private void DirtyRepaint()
         {
-            reDrawFunc?.Invoke();
+            RefrehButtonList();
+        }
+
+        private void RefrehButtonList()
+        {
+            if (Asset)
+            {
+                buttonList.Refresh(Asset.Motions, (m) => m.Name, (m) => m.GUID, SelectedGUID);
+            }
+        }
+
+        private void OnSelect(string guid)
+        {
+            if (guid == SelectedGUID)
+                return;
+            SelectedGUID = guid;
         }
 
         private void OnCreateToolBar(Toolbar toolbar)
@@ -75,35 +102,24 @@ namespace Animatic
 
         public void SetAsset(AnimaticAsset asset)
         {
-            Undo.RegisterCompleteObjectUndo(this, "change asset");
+            RegistUndo("change asset", false);
             Asset = asset;
             DirtyRepaint();
-        }
-
-        private void DrawMotionList()
-        {
-            if (!Asset)
-                return;
-
-            using (var scroll = new GUILayout.ScrollViewScope(ListScrollPos))
-            {
-                ListScrollPos = scroll.scrollPosition;
-                foreach (var m in Asset.Clips)
-                {
-                    bool isSelected = m.GUID == SelectedGUID;
-                    if (GUILayout.Toggle(isSelected, m.Name, "Button") != isSelected)
-                    {
-                        SelectedGUID = m.GUID;
-                        if (Simulate)
-                            DestroyImmediate(Simulate);
-                    }
-                }
-            }
         }
 
         private void DrawMotionView()
         {
 
+        }
+
+        public void RegistUndo(string name, bool withAsset = true)
+        {
+            if (withAsset && Asset)
+            {
+                Undo.RegisterCompleteObjectUndo(Asset, name);
+                EditorUtility.SetDirty(Asset);
+            }
+            Undo.RegisterCompleteObjectUndo(this, name);
         }
     }
 }

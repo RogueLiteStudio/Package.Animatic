@@ -155,7 +155,10 @@ namespace Animatic
                 crossFade.Destroy();
                 crossFade = null;
             }
-            playableGraph.Destroy();
+            if (playableGraph.IsValid())
+            {
+                playableGraph.Destroy();
+            }
         }
 
         private AnimaticMotion GetMotion(string name)
@@ -177,10 +180,16 @@ namespace Animatic
             return null;
         }
 
-        public void ReBindTarget(AnimaticAsset asset, GameObject obj)
+        public void BindTarget(AnimaticAsset asset, GameObject obj)
         {
             if (Asset == asset && obj == Object)
                 return;
+
+            if (obj && obj.GetComponentInChildren<Animator>())
+            {
+                Debug.LogError($"绑定 AnimaticSimulate 失败, {obj.name} 缺少有效的 Animator");
+                return;
+            }
             simulateType = SimulateType.None;
             Asset = asset;
             Object = obj;
@@ -190,17 +199,10 @@ namespace Animatic
             }
         }
 
-        public static AnimaticSimulate Create(AnimaticAsset asset, GameObject obj)
+        public static AnimaticSimulate Create()
         {
-            if (obj.GetComponentInChildren<Animator>())
-            {
-                Debug.LogError($"创建 AnimaticSimulate 失败, {obj.name} 缺少有效的 Animator");
-                return null;
-            }
             AnimaticSimulate simulate = CreateInstance<AnimaticSimulate>();
             simulate.hideFlags = HideFlags.HideAndDontSave;
-            simulate.Asset = asset;
-            simulate.Object = obj;
             simulate.simulateType = SimulateType.None;
             return simulate;
         }

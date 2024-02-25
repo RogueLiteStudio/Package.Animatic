@@ -2,7 +2,8 @@
     "name": "Animatic.Editor",
     "rootNamespace": "",
     "references": [
-        "Animatic.Runtime"
+        "Animatic.Runtime",
+        "Common.Editor"
     ],
     "includePlatforms": [
         "Editor"
