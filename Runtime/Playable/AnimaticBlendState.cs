@@ -10,7 +10,7 @@ namespace Animatic
         public float MinThreshold;
         public float MaxThreshold;
         public bool Loop;
-        public AnimaticBlendTree.Motion[] Motions;
+        public AnimaticMotionBlendTree.Motion[] Motions;
         public AnimaticMotion Motion { get; set; }
         private float duration;
         private float passTime;

@@ -4,7 +4,7 @@ using UnityEngine.Playables;
 
 namespace Animatic
 {
-    public class AnimaticClipSimulate : TMotionSimulate<AnimaticClip>
+    public class AnimaticClipSimulate : TMotionSimulate<AnimaticMotionState>
     {
         private AnimationClipPlayable clipPlayable;
         public override void Connect<V>(V destination, int destinationInputPort)
@@ -19,12 +19,12 @@ namespace Animatic
                 clipPlayable.Destroy();
         }
 
-        protected override bool RebuildCheck(AnimaticClip motion)
+        protected override bool RebuildCheck(AnimaticMotionState motion)
         {
             return !clipPlayable.IsNull() && clipPlayable.GetAnimationClip() != motion.Animation;
         }
 
-        protected override void OnSimulate(AnimaticClip motion, float passTime, float blendParam)
+        protected override void OnSimulate(AnimaticMotionState motion, float passTime, float blendParam)
         {
             var clip = motion.Animation;
             if (clip == null)
@@ -51,7 +51,7 @@ namespace Animatic
             clipPlayable.SetTime(passTime);
         }
 
-        protected override void OnBuild(PlayableGraph graph, AnimaticClip motion)
+        protected override void OnBuild(PlayableGraph graph, AnimaticMotionState motion)
         {
             if (motion.Animation == null)
                 return;

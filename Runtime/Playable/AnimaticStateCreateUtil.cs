@@ -5,7 +5,7 @@ namespace Animatic
 {
     public static class AnimaticStateCreateUtil
     {
-        public static IAnimaticState CreateState(AnimaticClip motion)
+        public static IAnimaticState CreateState(AnimaticMotionState motion)
         {
             if (!motion.Animation)
                 return null;
@@ -63,7 +63,7 @@ namespace Animatic
             return state;
         }
 
-        public static IAnimaticState CreateState(AnimaticBlendTree blendTree)
+        public static IAnimaticState CreateState(AnimaticMotionBlendTree blendTree)
         {
             int validCount = blendTree.Motions.Count(it=>it.Clip);
             if (validCount < 1)
@@ -88,7 +88,7 @@ namespace Animatic
                 min = Mathf.Min(m.Threshold, min);
                 max = Mathf.Max(m.Threshold, max);
             }
-            AnimaticBlendTree.Motion[] motions = blendTree.Motions.Where(it=>it.Clip).OrderBy(it=>it.Threshold).ToArray();
+            AnimaticMotionBlendTree.Motion[] motions = blendTree.Motions.Where(it=>it.Clip).OrderBy(it=>it.Threshold).ToArray();
             return new AnimaticBlendState 
             {
                 Motion = blendTree,
@@ -102,7 +102,7 @@ namespace Animatic
 
         public static IAnimaticState CreateStateFromAsset(this AnimaticAsset asset, string name)
         {
-            var motion = asset.Clips.FirstOrDefault(it => it.Name == name);
+            var motion = asset.States.FirstOrDefault(it => it.Name == name);
             if (motion != null)
                 return CreateState(motion);
             var blendTree = asset.BlendTree.FirstOrDefault(it => it.Name == name);

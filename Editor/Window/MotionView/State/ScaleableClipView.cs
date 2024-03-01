@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Animatic
 {
-    public class ScaleableClipView : AnimaticClipElement
+    public class ScaleableClipView : ClipElement
     {
         private readonly List<Label> clips = new List<Label>();
         private int selectIndex = -1;
@@ -16,7 +16,7 @@ namespace Animatic
             style.flexDirection = FlexDirection.Row;
         }
 
-        public void UpdateClips(AnimaticClip animaticClip)
+        public void UpdateClips(AnimaticMotionState animaticClip)
         {
             if (animaticClip.Clips == null)
                 return;   

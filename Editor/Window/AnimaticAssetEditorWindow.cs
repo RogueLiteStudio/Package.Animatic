@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -26,9 +28,14 @@ namespace Animatic
         public GameObject SimulateObject;
         public AnimaticSimulate Simulate;
         private ScrollView leftScrollView;
+        private ScrollView rightScrollView;
         private RadioButtonList buttonList;
 
+        private MotionEditorView currentEditorView;
+        private Dictionary<string, MotionEditorView> editorViews = new Dictionary<string, MotionEditorView>();
+
         public Vector2 ListScrollPos;
+        public Vector2 ListScrollPos2;
 
         public void CreateGUI()
         {
@@ -40,8 +47,8 @@ namespace Animatic
             leftScrollView.scrollOffset = ListScrollPos;
             leftScrollView.Add(buttonList = new RadioButtonList());
             buttonList.OnSelect = OnSelect;
-            var motionView = new IMGUIContainer(DrawMotionView);
-            split.Add(motionView);
+            split.Add(rightScrollView = new ScrollView(ScrollViewMode.Vertical));
+            rightScrollView.scrollOffset = ListScrollPos2;
             rootVisualElement.Add(split);
 
             DirtyRepaint();
@@ -61,6 +68,7 @@ namespace Animatic
         {
             Undo.undoRedoPerformed -= DirtyRepaint;
             ListScrollPos = leftScrollView.scrollOffset;
+            ListScrollPos2 = rightScrollView.scrollOffset;
         }
 
         private void OnDestroy()
@@ -72,6 +80,7 @@ namespace Animatic
         private void DirtyRepaint()
         {
             RefrehButtonList();
+            RefrshEditorView();
         }
 
         private void RefrehButtonList()
@@ -86,7 +95,37 @@ namespace Animatic
         {
             if (guid == SelectedGUID)
                 return;
+            leftScrollView.scrollOffset = Vector2.zero;
             SelectedGUID = guid;
+            RefrshEditorView();
+        }
+
+        private void RefrshEditorView()
+        {
+            if (currentEditorView != null && currentEditorView.viewDataKey != SelectedGUID)
+            {
+                currentEditorView.style.display = DisplayStyle.None;
+                currentEditorView = null;
+            }
+            var motion = Asset.Motions.FirstOrDefault(it => it.GUID == SelectedGUID);
+            if (motion == null)
+                return;
+            if (!editorViews.TryGetValue(SelectedGUID, out var editorView))
+            {
+                if (motion is AnimaticMotionState state)
+                {
+                    var view = new MotionStateEditorView();
+                    view.viewDataKey = SelectedGUID;
+                    view.Asset = Asset;
+                    editorViews.Add(SelectedGUID, view);
+                    editorView = view;
+                }
+            }
+            if (editorView == null)
+                return;
+            editorView.UpdateView();
+            currentEditorView = editorView;
+            currentEditorView.style.display = DisplayStyle.Flex;
         }
 
         private void OnCreateToolBar(Toolbar toolbar)
@@ -96,7 +135,7 @@ namespace Animatic
             assetSelectField.allowSceneObjects = false;
             if (Asset)
                 assetSelectField.SetValueWithoutNotify(Asset);
-            assetSelectField.RegisterValueChangedCallback((ChangeEvent < Object > evt) => SetAsset(evt.newValue as AnimaticAsset));
+            assetSelectField.RegisterValueChangedCallback((ChangeEvent<Object> evt) => SetAsset(evt.newValue as AnimaticAsset));
             toolbar.Add(assetSelectField);
         }
 
@@ -105,11 +144,6 @@ namespace Animatic
             RegistUndo("change asset", false);
             Asset = asset;
             DirtyRepaint();
-        }
-
-        private void DrawMotionView()
-        {
-
         }
 
         public void RegistUndo(string name, bool withAsset = true)

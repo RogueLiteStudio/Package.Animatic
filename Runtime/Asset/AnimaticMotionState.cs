@@ -10,7 +10,7 @@ namespace Animatic
     }
 
     [System.Serializable]
-    public class AnimaticClip : AnimaticMotion
+    public class AnimaticMotionState : AnimaticMotion
     {
         public AnimationClip Animation;
         public ScaleableClip[] Clips;

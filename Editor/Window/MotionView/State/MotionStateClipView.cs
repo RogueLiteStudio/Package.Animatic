@@ -3,12 +3,12 @@ using UnityEngine.UIElements;
 
 namespace Animatic
 {
-    public class AnimaticClipView : AnimaticClipElement
+    public class MotionStateClipView : ClipElement
     {
         private readonly Label label = new Label();
-        private readonly MotionClipEditorView selectClip = new MotionClipEditorView();
+        private readonly DragableClipView selectClip = new DragableClipView();
         public System.Action<ClipDragType, int> OnDragClipFrameOffset;
-        public AnimaticClipView()
+        public MotionStateClipView()
         {
             label.StretchToParentSize();
             Add(label);
@@ -20,7 +20,7 @@ namespace Animatic
             Add(selectClip);
         }
 
-        public void UpdateSelectClipIndex(AnimaticClip clip, int index)
+        public void UpdateSelectClipIndex(AnimaticMotionState clip, int index)
         {
             if (clip.Animation)
             {

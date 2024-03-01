@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Animatic
 {
     [System.Serializable]
-    public class AnimaticBlendTree : AnimaticMotion
+    public class AnimaticMotionBlendTree : AnimaticMotion
     {
         [System.Serializable]
         public struct Motion

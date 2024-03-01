@@ -17,7 +17,7 @@ namespace Animatic
         DragLeftHandle = 2,
         DragRightHandle = 3,
     }
-    public class MotionClipEditorView : TextElement
+    public class DragableClipView : TextElement
     {
         private CursorRect leftHandle;
         private CursorRect rightHandle;
@@ -26,7 +26,7 @@ namespace Animatic
 
         public System.Action<ClipDragType, float> OnClipDragOffset;
 
-        public MotionClipEditorView()
+        public DragableClipView()
         {
             leftHandle = new CursorRect();
             leftHandle.name = "ClipLeftHandle";

@@ -5,7 +5,7 @@ using UnityEngine.Playables;
 
 namespace Animatic
 {
-    public class AnimaticBlendTreeSimulate : TMotionSimulate<AnimaticBlendTree>
+    public class AnimaticBlendTreeSimulate : TMotionSimulate<AnimaticMotionBlendTree>
     {
         private readonly static AnimationClipPlayable[] empty = new AnimationClipPlayable[0];
         private AnimationClipPlayable[] clipPlayables = empty;
@@ -29,7 +29,7 @@ namespace Animatic
             }
         }
 
-        protected override void OnBuild(PlayableGraph graph, AnimaticBlendTree motion)
+        protected override void OnBuild(PlayableGraph graph, AnimaticMotionBlendTree motion)
         {
             int validCount = motion.Motions.Count(it => it.Clip);
             if (validCount == 0)
@@ -49,7 +49,7 @@ namespace Animatic
             }
         }
 
-        protected override void OnSimulate(AnimaticBlendTree motion, float passTime, float blendParam)
+        protected override void OnSimulate(AnimaticMotionBlendTree motion, float passTime, float blendParam)
         {
             if (clipPlayables.Length == 0)
                 return;
@@ -119,7 +119,7 @@ namespace Animatic
 
         }
 
-        protected override bool RebuildCheck(AnimaticBlendTree motion)
+        protected override bool RebuildCheck(AnimaticMotionBlendTree motion)
         {
             int validCount = motion.Motions.Count(it=>it.Clip);
             if (clipPlayables.Length != validCount)

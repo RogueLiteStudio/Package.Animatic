@@ -2,10 +2,10 @@
 
 namespace Animatic
 {
-    public class AnimaticClipElement : VisualElement
+    public class ClipElement : VisualElement
     {
         protected float frameWidth = AnimaticViewStyle.FrameWidth;
-        public AnimaticClipElement()
+        public ClipElement()
         {
             style.position = Position.Absolute;
             style.height = AnimaticViewStyle.ClipHeight;

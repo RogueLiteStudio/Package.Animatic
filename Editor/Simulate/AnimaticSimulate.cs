@@ -95,13 +95,13 @@ namespace Animatic
                 }
                 return;
             } while (false);
-            if (motion is AnimaticClip)
+            if (motion is AnimaticMotionState)
             {
                 simulate = new AnimaticClipSimulate();
                 simulate.Build(playableGraph, motion);
                 simulate.Connect(mixerPlayable, inputIndex);
             }
-            else if (motion is AnimaticBlendTree)
+            else if (motion is AnimaticMotionBlendTree)
             {
                 simulate = new AnimaticClipSimulate();
                 simulate.Build(playableGraph, motion);
@@ -163,7 +163,7 @@ namespace Animatic
 
         private AnimaticMotion GetMotion(string name)
         {
-            foreach (var m in Asset.Clips)
+            foreach (var m in Asset.States)
             {
                 if (m.Name == name)
                 {

@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace Animatic
 {
-    public class AnimaticGroupView : VisualElement
+    public class ClipGroupView : VisualElement
     {
         private float scale = 1;
         private int frameLength = 30;
@@ -24,7 +24,7 @@ namespace Animatic
             }
         }
 
-        public AnimaticGroupView()
+        public ClipGroupView()
         {
             timebarView = new TimebarView();
             timebarView.style.left = 0f;
@@ -55,7 +55,7 @@ namespace Animatic
             frameLocation.SetFrameLocation(frame);
         }
 
-        public void AddClipElement(AnimaticClipElement element)
+        public void AddClipElement(ClipElement element)
         {
             container.Add(element);
         }
@@ -70,7 +70,7 @@ namespace Animatic
             frameLocation.SetFrameWidth(frameWidth);
             foreach (var child in container.Children())
             {
-                if (child is AnimaticClipElement element)
+                if (child is ClipElement element)
                 {
                     element.SetFrameWidth(frameWidth);
                 }
