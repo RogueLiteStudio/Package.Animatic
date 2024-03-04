@@ -22,7 +22,7 @@ namespace Animatic
             lineView.style.bottom = 0;
             lineView.style.width = 2;
             lineView.style.borderLeftWidth = 2;
-            lineView.style.borderLeftColor = Color.white;
+            lineView.style.borderLeftColor = Color.green;
             lineView.pickingMode = PickingMode.Ignore;
             Add(lineView);
         }
@@ -48,7 +48,7 @@ namespace Animatic
             {
                 currentSelectFrame = frame;
                 lineView.style.left = frame * frameWidth;
-                OnFrameLocation(frame);
+                OnFrameLocation?.Invoke(frame);
             }
         }
     }

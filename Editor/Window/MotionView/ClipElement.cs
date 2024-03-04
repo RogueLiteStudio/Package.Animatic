@@ -7,7 +7,7 @@ namespace Animatic
         protected float frameWidth = AnimaticViewStyle.FrameWidth;
         public ClipElement()
         {
-            style.position = Position.Absolute;
+            //style.position = Position.Absolute;
             style.height = AnimaticViewStyle.ClipHeight;
             style.backgroundColor = AnimaticViewStyle.ClipColor;
         }

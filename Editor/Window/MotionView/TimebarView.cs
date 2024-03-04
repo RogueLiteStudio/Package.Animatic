@@ -49,6 +49,7 @@ namespace Animatic
                         Handles.DrawLine(new Vector2(x, size.y), new Vector2(x, 0));
                         GUIContent content = new GUIContent(i.ToString());
                         Vector2 lablesize = EditorStyles.label.CalcSize(content);
+                        lablesize.x = frameWidth * 5;
                         GUI.Label(new Rect(new Vector2(x + 2, 0), lablesize), content);
                     }
                     else
@@ -69,6 +70,7 @@ namespace Animatic
                         Handles.DrawLine(new Vector2(x, size.y), new Vector2(x, 0));
                         GUIContent content = new GUIContent(string.Format("{0:F2}", i*0.5f));
                         Vector2 lablesize = EditorStyles.label.CalcSize(content);
+                        lablesize.x = frameWidth * 5;
                         GUI.Label(new Rect(new Vector2(x + 2, 0), lablesize), content);
                     }
                     else

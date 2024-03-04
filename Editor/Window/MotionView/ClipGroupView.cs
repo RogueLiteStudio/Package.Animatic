@@ -8,9 +8,9 @@ namespace Animatic
         private float scale = 1;
         private int frameLength = 30;
         private float frameRate = 30;
-        private TimebarView timebarView;
-        private VisualElement container;
-        private FrameLocationView frameLocation;
+        private readonly TimebarView timebarView = new TimebarView();
+        private readonly VisualElement container = new VisualElement();
+        private readonly FrameLocationView frameLocation = new FrameLocationView();
 
         public event System.Action<int> OnFrameLocation
         {
@@ -26,21 +26,24 @@ namespace Animatic
 
         public ClipGroupView()
         {
-            timebarView = new TimebarView();
-            timebarView.style.left = 0f;
-            timebarView.style.right = 0f;
-            timebarView.style.top = 0f;
+            style.flexDirection = FlexDirection.Column;
+
+            timebarView.style.left = 0;
+            timebarView.style.right = 0;
             timebarView.style.height = AnimaticViewStyle.TimeBarHeight;
             Add(timebarView);
-            container = new VisualElement();
-            container.StretchToParentSize();
-            container.style.top = AnimaticViewStyle.TimeBarHeight;
+
+            container.style.left = 0;
+            container.style.right = 0;
             container.style.flexDirection = FlexDirection.Column;
             Add(container);
 
-            frameLocation = new FrameLocationView();
             frameLocation.StretchToParentSize();
             Add(frameLocation);
+
+            style.paddingBottom = 10;
+            this.SetBorderWidth(2);
+            this.SetBorderColor(Color.gray);
         }
 
         public void SetFrameInfo(int frameLength, float frameRate)
@@ -65,7 +68,7 @@ namespace Animatic
             int length = Mathf.Max(30, frameLength);
             float frameWidth = (30 / frameRate) * AnimaticViewStyle.FrameWidth * scale;
             float minWidth = length * AnimaticViewStyle.FrameWidth * (30 / frameRate) * scale;
-            style.minWidth = minWidth;
+            style.minWidth = minWidth + 20;
             timebarView.SetFramInfo(frameRate, frameWidth);
             frameLocation.SetFrameWidth(frameWidth);
             foreach (var child in container.Children())

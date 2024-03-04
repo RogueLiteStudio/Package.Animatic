@@ -10,6 +10,7 @@ namespace Animatic
         public System.Action<ClipDragType, int> OnDragClipFrameOffset;
         public MotionStateClipView()
         {
+            label.style.unityTextAlign = TextAnchor.MiddleCenter;
             label.StretchToParentSize();
             Add(label);
 

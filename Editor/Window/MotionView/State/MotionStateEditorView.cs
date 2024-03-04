@@ -9,9 +9,12 @@ namespace Animatic
         private readonly TextField nameField = new TextField("Name");
         private readonly ObjectField clipSelectField = new ObjectField("AnimationClip");
         private readonly Label clipInfoLabel = new Label();
+        private readonly ScrollView clipScroll = new ScrollView(ScrollViewMode.Vertical);
         private readonly ClipGroupView groupView = new ClipGroupView();
+        private readonly MotionStateClipView clipView = new MotionStateClipView();
 
         private AnimaticMotionState motionState;
+        private int selectClipIndex = -1;
 
 
         public MotionStateEditorView()
@@ -25,7 +28,11 @@ namespace Animatic
             Add(clipSelectField);
 
             Add(clipInfoLabel);
-            Add(groupView);
+            clipScroll.style.left = 0;
+            clipScroll.style.right = 0;
+            Add(clipScroll);
+            groupView.AddClipElement(clipView);
+            clipScroll.Add(groupView);
         }
 
 
@@ -54,6 +61,7 @@ namespace Animatic
             }
             clipSelectField.SetValueWithoutNotify(clip);
             groupView.SetFrameInfo(Mathf.RoundToInt(length * frameRate), frameRate);
+            clipView.UpdateSelectClipIndex(motionState, selectClipIndex);
         }
 
         private void OnClipSelect(ChangeEvent<Object> evt)
@@ -62,6 +70,10 @@ namespace Animatic
             {
                 RegistUndo("change clip");
                 motionState.Animation = clip;
+                if (string.IsNullOrEmpty(motionState.Name) || motionState.Name.StartsWith("New ", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    motionState.Name = clip.name;
+                }
                 OnUpdateView(motionState);
             }
         }

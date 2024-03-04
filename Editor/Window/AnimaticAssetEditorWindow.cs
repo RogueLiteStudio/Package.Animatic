@@ -43,12 +43,39 @@ namespace Animatic
             OnCreateToolBar(toolbar);
             rootVisualElement.Add(toolbar);
             var split = new TwoPaneSplitView(0, 200, TwoPaneSplitViewOrientation.Horizontal);
-            split.Add(leftScrollView = new ScrollView(ScrollViewMode.Vertical));
+            //左侧列表
+            var listView = new VisualElement();
+            listView.style.flexDirection = FlexDirection.Column;
+            listView.Add(leftScrollView = new ScrollView(ScrollViewMode.Vertical));
             leftScrollView.scrollOffset = ListScrollPos;
             leftScrollView.Add(buttonList = new RadioButtonList());
             buttonList.OnSelect = OnSelect;
+            var createButton = new Button(() =>
+            {
+                RegistUndo("create motion");
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent("State"), false, () =>
+                {
+                    var state = AssetUtil.CreateState(Asset, null);
+                    OnSelect(state.GUID);
+                    DirtyRepaint();
+                });
+                menu.AddItem(new GUIContent("BlendTree"), false, () =>
+                {
+                    var blendTree = AssetUtil.CreateBlendTree(Asset, null);
+                    OnSelect(blendTree.GUID);
+                    DirtyRepaint();
+                });
+                menu.ShowAsContext();
+            });
+            createButton.text = "创建";
+            leftScrollView.Add(createButton);
+            split.Add(listView);
+            
+            //右侧编辑器
             split.Add(rightScrollView = new ScrollView(ScrollViewMode.Vertical));
             rightScrollView.scrollOffset = ListScrollPos2;
+            rightScrollView.style.paddingLeft = 5;
             rootVisualElement.Add(split);
 
             DirtyRepaint();
@@ -107,6 +134,8 @@ namespace Animatic
                 currentEditorView.style.display = DisplayStyle.None;
                 currentEditorView = null;
             }
+            if (Asset == null)
+                return;
             var motion = Asset.Motions.FirstOrDefault(it => it.GUID == SelectedGUID);
             if (motion == null)
                 return;
@@ -119,6 +148,7 @@ namespace Animatic
                     view.Asset = Asset;
                     editorViews.Add(SelectedGUID, view);
                     editorView = view;
+                    rightScrollView.Add(view);
                 }
             }
             if (editorView == null)
