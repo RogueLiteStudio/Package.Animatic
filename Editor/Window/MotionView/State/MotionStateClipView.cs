@@ -8,6 +8,7 @@ namespace Animatic
         private readonly Label label = new Label();
         private readonly DragableClipView selectClip = new DragableClipView();
         public System.Action<ClipDragType, int> OnDragClipFrameOffset;
+
         public MotionStateClipView()
         {
             label.style.unityTextAlign = TextAnchor.MiddleCenter;
@@ -53,12 +54,12 @@ namespace Animatic
 
         private void OnClipDragOffset(ClipDragType type, float offset)
         {
-            float x = selectClip.style.left.value.value;
-            int preFrame = Mathf.RoundToInt(x / frameWidth);
-            int newFrame = Mathf.RoundToInt((x + offset) / frameWidth);
-            int offsetFrame = newFrame - preFrame;
-            if (offsetFrame != 0 )
-                OnDragClipFrameOffset?.Invoke(type, offsetFrame);
+            int frameOffset = (int)(offset / frameWidth);
+            if (frameOffset != 0)
+            {
+                selectClip.OnDragApply(frameWidth);
+                OnDragClipFrameOffset?.Invoke(type, frameOffset);
+            }
         }
 
         protected override void OnFrameWidthChange(float scale)

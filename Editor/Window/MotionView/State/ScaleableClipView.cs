@@ -18,8 +18,13 @@ namespace Animatic
 
         public void UpdateClips(AnimaticMotionState animaticClip)
         {
-            if (animaticClip.Clips == null)
+            if (animaticClip.Clips == null || animaticClip.Clips.Length == 0)
+            {
+                visible = false;
                 return;   
+            }
+            visible = true;
+            float width = 0;
             for (int i=0; i< animaticClip.Clips.Length; ++i)
             {
                 var clip = animaticClip.Clips[i];
@@ -28,8 +33,11 @@ namespace Animatic
                 float speed = clip.Speed;
                 if (speed == 0)
                     speed = 1;
-                view.style.width = frameWidth * clip.FrameCount / speed;
+                float clipWidth = frameWidth * clip.FrameCount / speed;
+                view.style.width = clipWidth;
+                width += clipWidth;
             }
+            style.width = width;
             if (clips.Count > animaticClip.Clips.Length)
             {
                 for (int i= animaticClip.Clips.Length; i<clips.Count; ++i)
@@ -60,7 +68,9 @@ namespace Animatic
                 label.style.top = 0;
                 label.style.bottom = 0;
                 label.SetBorderColor(Color.white);
+                label.SetBorderWidth(1);
                 label.RegisterCallback<ClickEvent>(OnClick);
+                label.style.unityTextAlign = TextAnchor.MiddleCenter;
                 Add(label);
             }
             return clips[index];
@@ -95,7 +105,7 @@ namespace Animatic
 
         private void SetSelcted(Label label, bool selected)
         {
-            label.SetBorderWidth(selected ? 1f : 0f);
+            label.SetBorderColor(selected ? Color.green : Color.gray);
         }
     }
 }

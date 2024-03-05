@@ -19,17 +19,17 @@ namespace Animatic
     }
     public class DragableClipView : TextElement
     {
-        private CursorRect leftHandle;
-        private CursorRect rightHandle;
+        private CursorRect leftHandle = new CursorRect();
+        private CursorRect rightHandle = new CursorRect();
 
         private ClipDragType dragType;
-
+        private float dragOffset;
         public System.Action<ClipDragType, float> OnClipDragOffset;
 
         public DragableClipView()
         {
-            leftHandle = new CursorRect();
             leftHandle.name = "ClipLeftHandle";
+            leftHandle.style.position = Position.Absolute;
             leftHandle.style.left = 0;
             leftHandle.style.width = 3;
             leftHandle.style.top = 0;
@@ -37,8 +37,8 @@ namespace Animatic
             leftHandle.RegisterCallback<MouseDownEvent>(OnClickLeftHandle);
             Add(leftHandle);
 
-            rightHandle = new CursorRect();
             rightHandle.name = "ClipRightHandle";
+            rightHandle.style.position = Position.Absolute;
             rightHandle.style.right = 0;
             rightHandle.style.width = 3;
             rightHandle.style.top = 0;
@@ -55,6 +55,11 @@ namespace Animatic
             this.SetBorderWidth(selected ? 1 : 0);
         }
 
+        public void OnDragApply(float frameWidth)
+        {
+            dragOffset %= frameWidth;
+        }
+
         private void OnClickRightHandle(MouseDownEvent evt)
         {
             dragType = ClipDragType.DragRightHandle;
@@ -69,12 +74,16 @@ namespace Animatic
             switch (drag.State)
             {
                 case DragStateType.Start:
+                    dragOffset = 0;
                     break;
                 case DragStateType.Move:
-                    OnClipDragOffset?.Invoke(dragType, drag.Delta.x);
+                    dragOffset += drag.Delta.x;
+                    OnClipDragOffset?.Invoke(dragType, dragOffset);
                     break;
                 case DragStateType.End:
-            	    break;
+                    dragOffset = 0;
+                    dragType = ClipDragType.DragClip;
+                    break;
             }
         }
     }

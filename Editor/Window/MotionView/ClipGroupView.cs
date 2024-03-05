@@ -8,19 +8,22 @@ namespace Animatic
         private float scale = 1;
         private int frameLength = 30;
         private float frameRate = 30;
+        private float frameWidth= AnimaticViewStyle.FrameWidth;
+        private int currentSelectFrame = 0;
+
         private readonly TimebarView timebarView = new TimebarView();
         private readonly VisualElement container = new VisualElement();
-        private readonly FrameLocationView frameLocation = new FrameLocationView();
+        private readonly VisualElement lineView = new VisualElement();
 
         public event System.Action<int> OnFrameLocation
         {
             add
             {
-                frameLocation.OnFrameLocation += value;
+                timebarView.OnFrameLocation += value;
             }
             remove
             {
-                frameLocation.OnFrameLocation -= value;
+                timebarView.OnFrameLocation -= value;
             }
         }
 
@@ -31,6 +34,7 @@ namespace Animatic
             timebarView.style.left = 0;
             timebarView.style.right = 0;
             timebarView.style.height = AnimaticViewStyle.TimeBarHeight;
+            timebarView.OnFrameLocation = SetFrameLocation;
             Add(timebarView);
 
             container.style.left = 0;
@@ -38,8 +42,14 @@ namespace Animatic
             container.style.flexDirection = FlexDirection.Column;
             Add(container);
 
-            frameLocation.StretchToParentSize();
-            Add(frameLocation);
+            lineView.style.position = Position.Absolute;
+            lineView.style.top = 0;
+            lineView.style.bottom = 0;
+            lineView.style.width = 2;
+            lineView.style.borderLeftWidth = 2;
+            lineView.style.borderLeftColor = Color.green;
+            lineView.pickingMode = PickingMode.Ignore;
+            Add(lineView);
 
             style.paddingBottom = 10;
             this.SetBorderWidth(2);
@@ -55,22 +65,24 @@ namespace Animatic
 
         public void SetFrameLocation(int frame)
         {
-            frameLocation.SetFrameLocation(frame);
+            currentSelectFrame = frame;
+            lineView.style.left = frame * frameWidth;
         }
 
         public void AddClipElement(ClipElement element)
         {
+            element.style.marginTop = 5;
             container.Add(element);
         }
 
         private void UpdateView()
         {
             int length = Mathf.Max(30, frameLength);
-            float frameWidth = (30 / frameRate) * AnimaticViewStyle.FrameWidth * scale;
+            frameWidth = (30 / frameRate) * AnimaticViewStyle.FrameWidth * scale;
             float minWidth = length * AnimaticViewStyle.FrameWidth * (30 / frameRate) * scale;
             style.minWidth = minWidth + 20;
             timebarView.SetFramInfo(frameRate, frameWidth);
-            frameLocation.SetFrameWidth(frameWidth);
+            lineView.style.left = currentSelectFrame * frameWidth;
             foreach (var child in container.Children())
             {
                 if (child is ClipElement element)

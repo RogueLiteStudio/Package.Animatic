@@ -9,7 +9,7 @@ namespace Animatic
         private float frameWidth = AnimaticViewStyle.FrameWidth;
         private float frameRate = 30;
         private bool frameMode = true;
-
+        public System.Action<int> OnFrameLocation;
         public bool IsFrameMode
         {
             get { return frameMode; }
@@ -26,6 +26,7 @@ namespace Animatic
         public TimebarView()
         {
             onGUIHandler = OnGUI;
+            this.AddManipulator(new TimeBarLocationManipulator(OnTimeBarLocation));
         }
 
         public void SetFramInfo(float frameRate, float frameWidth)
@@ -33,6 +34,12 @@ namespace Animatic
             this.frameRate = frameRate;
             this.frameWidth = frameWidth;
             MarkDirtyRepaint();
+        }
+
+        private void OnTimeBarLocation(Vector2 pos)
+        {
+            int frame = Mathf.FloorToInt(pos.x / frameWidth);
+            OnFrameLocation?.Invoke(frame);
         }
 
         private void OnGUI()
