@@ -106,6 +106,7 @@ namespace Animatic
 
         private void DirtyRepaint()
         {
+            assetSelectField.SetValueWithoutNotify(Asset);
             RefrehButtonList();
             RefrshEditorView();
         }
@@ -114,7 +115,12 @@ namespace Animatic
         {
             if (Asset)
             {
+                buttonList.style.display = DisplayStyle.Flex;
                 buttonList.Refresh(Asset.Motions, (m) => m.Name, (m) => m.GUID, SelectedGUID);
+            }
+            else
+            {
+                buttonList.style.display = DisplayStyle.None;
             }
         }
 
@@ -122,6 +128,7 @@ namespace Animatic
         {
             if (guid == SelectedGUID)
                 return;
+            RegistUndo("select motion");
             leftScrollView.scrollOffset = Vector2.zero;
             SelectedGUID = guid;
             RefrshEditorView();
@@ -171,7 +178,8 @@ namespace Animatic
 
         public void SetAsset(AnimaticAsset asset)
         {
-            RegistUndo("change asset", false);
+            if (Asset)
+                RegistUndo("change asset", false);
             Asset = asset;
             DirtyRepaint();
         }
