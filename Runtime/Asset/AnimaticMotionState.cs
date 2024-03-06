@@ -15,6 +15,15 @@ namespace Animatic
         public AnimationClip Animation;
         public ScaleableClip[] Clips;
 
+        public int GetAnimationFrameCount()
+        {
+            if (Animation)
+            {
+                return Mathf.RoundToInt(Animation.frameRate * Animation.length);
+            }
+            return 0;
+        }
+
         public override float GetLength()
         {
             if (Animation)
@@ -23,7 +32,7 @@ namespace Animatic
                 if (!Clips.IsEmpty())
                 {
                     float frameTime = 1/Animation.frameRate;
-                    int frameCount = Mathf.RoundToInt(length / Animation.frameRate);
+                    int frameCount = Mathf.RoundToInt(length * Animation.frameRate);
                     float clipsLength = 0;
                     for (int i=0; i<Clips.Length; ++i)
                     {

@@ -16,7 +16,7 @@ namespace Animatic
             style.flexDirection = FlexDirection.Row;
         }
 
-        public void UpdateClips(AnimaticMotionState animaticClip)
+        public void UpdateClips(AnimaticMotionState animaticClip, int selectIndex)
         {
             if (animaticClip.Clips == null || animaticClip.Clips.Length == 0)
             {
@@ -35,6 +35,7 @@ namespace Animatic
                     speed = 1;
                 float clipWidth = frameWidth * clip.FrameCount / speed;
                 view.style.width = clipWidth;
+                view.style.display = DisplayStyle.Flex;
                 width += clipWidth;
             }
             style.width = width;
@@ -42,9 +43,11 @@ namespace Animatic
             {
                 for (int i= animaticClip.Clips.Length; i<clips.Count; ++i)
                 {
-                    clips[i].style.width = 0;
+                    clips[i].style.display = DisplayStyle.None;
                 }
             }
+            this.selectIndex = selectIndex;
+            UpdateSelect();
         }
 
         protected override void OnFrameWidthChange(float scale)

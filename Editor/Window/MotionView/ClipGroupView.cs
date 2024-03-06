@@ -27,6 +27,8 @@ namespace Animatic
             }
         }
 
+        public int SelectFrame => currentSelectFrame;
+
         public ClipGroupView()
         {
             style.flexDirection = FlexDirection.Column;
@@ -81,6 +83,7 @@ namespace Animatic
             frameWidth = (30 / frameRate) * AnimaticViewStyle.FrameWidth * scale;
             float minWidth = length * AnimaticViewStyle.FrameWidth * (30 / frameRate) * scale;
             style.minWidth = minWidth + 20;
+            
             timebarView.SetFramInfo(frameRate, frameWidth);
             lineView.style.left = currentSelectFrame * frameWidth;
             foreach (var child in container.Children())
