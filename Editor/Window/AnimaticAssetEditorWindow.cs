@@ -14,19 +14,32 @@ namespace Animatic
         {
             if (EditorUtility.InstanceIDToObject(instanceID) is AnimaticAsset asset)
             {
-                var window = GetWindow<AnimaticAssetEditorWindow>();
-                window.assetSelectField.SetValueWithoutNotify(asset);
-                window.SetAsset(asset);
+                Open(asset);
                 return true;
             }
 
             return false;
         }
-        private ObjectField assetSelectField;
+
+        public static void Open(AnimaticAsset asset)
+        {
+            var window = GetWindow<AnimaticAssetEditorWindow>();
+            window.assetSelectField.SetValueWithoutNotify(asset);
+            window.SetAsset(asset);
+        }
         public AnimaticAsset Asset;
         public string SelectedGUID;
+
+        public bool EnableSimulate;
+        public bool IsInstantiateObject;
         public GameObject SimulateObject;
         public AnimaticSimulate Simulate;
+
+        //Toolbar
+        private ObjectField assetSelectField;
+        private ObjectField previewObjSelectField;
+        private Button preViewButton;
+
         private ScrollView leftScrollView;
         private ScrollView rightScrollView;
         private RadioButtonList buttonList;
@@ -100,6 +113,7 @@ namespace Animatic
 
         private void OnDestroy()
         {
+            ClearSimulate();
             if (Simulate)
                 DestroyImmediate(Simulate);
         }
@@ -107,6 +121,9 @@ namespace Animatic
         private void DirtyRepaint()
         {
             assetSelectField.SetValueWithoutNotify(Asset);
+            previewObjSelectField.style.display = Asset ? DisplayStyle.Flex : DisplayStyle.None;
+            previewObjSelectField.SetValueWithoutNotify(SimulateObject);
+            preViewButton.style.display = SimulateObject ? DisplayStyle.None : DisplayStyle.Flex;
             RefrehButtonList();
             RefrshEditorView();
         }
@@ -153,6 +170,7 @@ namespace Animatic
                     var view = new MotionStateEditorView();
                     view.viewDataKey = SelectedGUID;
                     view.Asset = Asset;
+                    view.Simulate = Simulate;
                     editorViews.Add(SelectedGUID, view);
                     editorView = view;
                     rightScrollView.Add(view);
@@ -167,13 +185,76 @@ namespace Animatic
 
         private void OnCreateToolBar(Toolbar toolbar)
         {
-            assetSelectField = new ObjectField();
+            assetSelectField = new ObjectField("编辑资源");
+            assetSelectField.labelElement.style.minWidth = 0;
             assetSelectField.objectType = typeof(AnimaticAsset);
             assetSelectField.allowSceneObjects = false;
             if (Asset)
                 assetSelectField.SetValueWithoutNotify(Asset);
             assetSelectField.RegisterValueChangedCallback((ChangeEvent<Object> evt) => SetAsset(evt.newValue as AnimaticAsset));
             toolbar.Add(assetSelectField);
+            previewObjSelectField = new ObjectField("预览对象");
+            previewObjSelectField.labelElement.style.minWidth = 0;
+            previewObjSelectField.objectType = typeof(GameObject);
+            previewObjSelectField.allowSceneObjects = true;
+            previewObjSelectField.RegisterValueChangedCallback(OnBinderPrefabChange);
+            toolbar.Add(previewObjSelectField);
+
+            preViewButton = new Button();
+            preViewButton.text = "在场景中预览";
+            preViewButton.clicked += () =>
+            {
+                if (SimulateObject || !Asset)
+                {
+                    return;
+                }
+                var prefab = AnimaticAssetPrefabBinder.GetPrefab(Asset);
+                SimulateObject = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+                Simulate.BindTarget(Asset, SimulateObject);
+                IsInstantiateObject = true;
+                preViewButton.style.display = DisplayStyle.None;
+                previewObjSelectField.SetValueWithoutNotify(SimulateObject);
+            };
+            toolbar.Add(preViewButton);
+        }
+
+        private void OnBinderPrefabChange(ChangeEvent<Object> evt)
+        {
+            if (evt.newValue is GameObject go)
+            {
+                if (PrefabUtility.IsPartOfPrefabAsset(go))
+                {
+                    EditorUtility.DisplayDialog("Error", "预览对象不能是Prefab", "OK");
+                    previewObjSelectField.SetValueWithoutNotify(SimulateObject);
+                    return;
+                }
+                if (go != SimulateObject)
+                {
+                    ClearSimulate();
+                    SimulateObject = go;
+                    IsInstantiateObject = true;
+                    Simulate.BindTarget(Asset, SimulateObject);
+                }
+                preViewButton.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                preViewButton.style.display = DisplayStyle.Flex;
+                ClearSimulate();
+            }
+        }
+
+        private void ClearSimulate()
+        {
+            if (SimulateObject)
+            {
+                if (IsInstantiateObject)
+                {
+                    DestroyImmediate(SimulateObject);
+                    IsInstantiateObject = false;
+                }
+                SimulateObject = null;
+            }
         }
 
         public void SetAsset(AnimaticAsset asset)

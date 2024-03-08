@@ -16,13 +16,17 @@ namespace Animatic
         private readonly MotionStateClipView clipView = new MotionStateClipView();
         private readonly ScaleableClipView scaleableClipView = new ScaleableClipView();
         private readonly ListView clipListView = new ListView();
+        private readonly PlayButtonList playButtonList = new PlayButtonList();
 
         private AnimaticMotionState motionState;
         private int selectClipIndex = -1;
-
-
+        private IVisualElementScheduledItem playingTimer;
+        private bool isPlaying;
         public MotionStateEditorView()
         {
+            playingTimer = schedule.Execute(OnPlayingTimer).Every(15);
+            playingTimer.Pause();
+
             style.flexDirection = FlexDirection.Column;
             nameField.RegisterValueChangedCallback(OnNameChange);
             Add(nameField);
@@ -32,7 +36,8 @@ namespace Animatic
             Add(clipSelectField);
 
             Add(clipInfoLabel);
-
+            playButtonList.OnPlayEvent += OnPlayEvent;
+            Add(playButtonList);
             clipScroll.style.left = 0;
             clipScroll.style.right = 0;
             Add(clipScroll);
@@ -104,6 +109,37 @@ namespace Animatic
             clipListView.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
             clipListView.headerTitle = "片段列表";
             Add(clipListView);
+        }
+
+
+        private void OnPlayingTimer(TimerState timerState)
+        {
+            Debug.LogError($"{timerState.deltaTime}");
+        }
+
+        private void OnPlayEvent(PlayButtonList.PlayEventType type)
+        {
+            switch(type)
+            {
+                case PlayButtonList.PlayEventType.FirstKey:
+                    break;
+                case PlayButtonList.PlayEventType.LastKey:
+                    break;
+                case PlayButtonList.PlayEventType.Play:
+                    //playingTimer.Resume();
+                    isPlaying = true;
+                    playButtonList.SetPlayState(isPlaying);
+                    break;
+                case PlayButtonList.PlayEventType.Pause:
+                    playingTimer.Pause();
+                    isPlaying = false;
+                    playButtonList.SetPlayState(isPlaying);
+                    break;
+                case PlayButtonList.PlayEventType.PreKey:
+                    break;
+                case PlayButtonList.PlayEventType.NextKey:
+                    break;
+            }
         }
 
         private void OnFrameLocation(int frameIndex)

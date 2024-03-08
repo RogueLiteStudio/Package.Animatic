@@ -7,6 +7,7 @@ namespace Animatic
     public class MotionEditorView : VisualElement
     {
         public AnimaticAsset Asset;
+        public AnimaticSimulate Simulate;
 
         public void UpdateView()
         {

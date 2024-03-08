@@ -185,7 +185,7 @@ namespace Animatic
             if (Asset == asset && obj == Object)
                 return;
 
-            if (obj && obj.GetComponentInChildren<Animator>())
+            if (obj && !obj.GetComponentInChildren<Animator>())
             {
                 Debug.LogError($"绑定 AnimaticSimulate 失败, {obj.name} 缺少有效的 Animator");
                 return;
