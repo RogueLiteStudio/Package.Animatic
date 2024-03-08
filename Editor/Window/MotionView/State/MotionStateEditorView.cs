@@ -8,7 +8,6 @@ namespace Animatic
 {
     public class MotionStateEditorView : MotionEditorView
     {
-        private readonly TextField nameField = new TextField("Name");
         private readonly ObjectField clipSelectField = new ObjectField("AnimationClip");
         private readonly Label clipInfoLabel = new Label();
         private readonly PlayButtonList playButtonList = new PlayButtonList();
@@ -19,7 +18,8 @@ namespace Animatic
         private readonly ScaleableClipView scaleableClipView = new ScaleableClipView();
         private readonly ListView clipListView = new ListView();
 
-        private readonly IVisualElementScheduledItem playingTimer;
+        protected override AnimaticMotion Motion => motionState;
+
         private AnimaticMotionState motionState;
         private int selectClipIndex = -1;
         private bool isPlaying;
@@ -28,12 +28,6 @@ namespace Animatic
         private bool isPreviewOriginal;
         public MotionStateEditorView()
         {
-            playingTimer = schedule.Execute(OnPlayingTimer).Every(10);
-            playingTimer.Pause();
-
-            style.flexDirection = FlexDirection.Column;
-            nameField.RegisterValueChangedCallback(OnNameChange);
-            Add(nameField);
 
             clipSelectField.objectType = typeof(AnimationClip);
             clipSelectField.RegisterValueChangedCallback(OnClipSelect);
@@ -45,7 +39,7 @@ namespace Animatic
             previewOriginal.RegisterValueChangedCallback((evt) =>
             {
                 isPreviewOriginal = evt.newValue;
-                OnFrameLocation(groupView.SelectFrame);
+                SetFrameLocation(groupView.SelectFrame);
             });
             playButtonList.Add(previewOriginal);
             clipScroll.style.left = 0;
@@ -123,13 +117,12 @@ namespace Animatic
 
         protected override void OnDeActive()
         {
-            playingTimer.Pause();
             isPlaying = false;
             playButtonList.SetPlayState(isPlaying);
         }
 
 
-        private void OnPlayingTimer(TimerState timerState)
+        protected override void OnPlayingTimer(TimerState timerState)
         {
             if (motionState == null || !motionState.Animation)
             {
@@ -296,15 +289,10 @@ namespace Animatic
                 if (string.IsNullOrEmpty(motionState.Name) || motionState.Name.StartsWith("New ", System.StringComparison.OrdinalIgnoreCase))
                 {
                     motionState.Name = clip.name;
+                    OnNameChanged?.Invoke();
                 }
                 OnUpdateView(motionState);
             }
-        }
-
-        private void OnNameChange(ChangeEvent<string> evt)
-        {
-            RegistUndo("change name");
-            motionState.Name = evt.newValue;
         }
 
     }

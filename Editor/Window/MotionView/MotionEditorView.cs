@@ -9,9 +9,34 @@ namespace Animatic
         public AnimaticAsset Asset;
         public AnimaticSimulate Simulate;
 
+        public System.Action OnNameChanged;
+
+        protected readonly IVisualElementScheduledItem playingTimer;
+
+        protected virtual AnimaticMotion Motion => null;
+
+        protected readonly TextField nameField = new TextField("Name");
+
+        public MotionEditorView()
+        {
+            playingTimer = schedule.Execute(OnPlayingTimer).Every(10);
+            playingTimer.Pause();
+
+            style.flexDirection = FlexDirection.Column;
+            nameField.RegisterValueChangedCallback(OnNameChange);
+            Add(nameField);
+        }
+        private void OnNameChange(ChangeEvent<string> evt)
+        {
+            RegistUndo("change name");
+            Motion.Name = evt.newValue;
+            OnNameChanged?.Invoke();
+        }
+
         public void UpdateView()
         {
             var motion = Asset.Motions.FirstOrDefault(it=>it.GUID == viewDataKey);
+            nameField.SetValueWithoutNotify(motion.Name);
             OnUpdateView(motion);
         }
 
@@ -22,9 +47,14 @@ namespace Animatic
             {
                 style.display = newStyle;
                 if (!active)
+                {
+                    playingTimer.Pause();
                     OnDeActive();
+                }
                 else
+                {
                     OnActive();
+                }
             }
         }
 
@@ -43,5 +73,6 @@ namespace Animatic
         {
 
         }
+        protected virtual void OnPlayingTimer(TimerState timerState) { }
     }
 }

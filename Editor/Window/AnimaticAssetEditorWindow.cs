@@ -59,30 +59,11 @@ namespace Animatic
             //左侧列表
             var listView = new VisualElement();
             listView.style.flexDirection = FlexDirection.Column;
+            listView.Add(new Label("动画列表").SetTextAlign(TextAnchor.MiddleCenter).SetTextStyle(FontStyle.Bold));
             listView.Add(leftScrollView = new ScrollView(ScrollViewMode.Vertical));
             leftScrollView.scrollOffset = ListScrollPos;
             leftScrollView.Add(buttonList = new RadioButtonList());
             buttonList.OnSelect = OnSelect;
-            var createButton = new Button(() =>
-            {
-                RegistUndo("create motion");
-                var menu = new GenericMenu();
-                menu.AddItem(new GUIContent("State"), false, () =>
-                {
-                    var state = AssetUtil.CreateState(Asset, null);
-                    OnSelect(state.GUID);
-                    DirtyRepaint();
-                });
-                menu.AddItem(new GUIContent("BlendTree"), false, () =>
-                {
-                    var blendTree = AssetUtil.CreateBlendTree(Asset, null);
-                    OnSelect(blendTree.GUID);
-                    DirtyRepaint();
-                });
-                menu.ShowAsContext();
-            });
-            createButton.text = "创建";
-            leftScrollView.Add(createButton);
             split.Add(listView);
             
             //右侧编辑器
@@ -133,7 +114,7 @@ namespace Animatic
             if (Asset)
             {
                 buttonList.style.display = DisplayStyle.Flex;
-                buttonList.Refresh(Asset.Motions, (m) => m.Name, (m) => m.GUID, SelectedGUID);
+                buttonList.Refresh(Asset.Motions, (m) => string.IsNullOrEmpty(m.Name) ? "<未命名>" : m.Name, (m) => m.GUID, SelectedGUID);
             }
             else
             {
@@ -171,6 +152,18 @@ namespace Animatic
                     view.viewDataKey = SelectedGUID;
                     view.Asset = Asset;
                     view.Simulate = Simulate;
+                    view.OnNameChanged += RefrehButtonList;
+                    editorViews.Add(SelectedGUID, view);
+                    editorView = view;
+                    rightScrollView.Add(view);
+                }
+                else if (motion is AnimaticMotionBlendTree blendTree)
+                {
+                    var view = new BlendTreeEditorView();
+                    view.viewDataKey = SelectedGUID;
+                    view.Asset = Asset;
+                    view.Simulate = Simulate;
+                    view.OnNameChanged += RefrehButtonList;
                     editorViews.Add(SelectedGUID, view);
                     editorView = view;
                     rightScrollView.Add(view);
@@ -216,6 +209,28 @@ namespace Animatic
                 previewObjSelectField.SetValueWithoutNotify(SimulateObject);
             };
             toolbar.Add(preViewButton);
+
+
+            var createButton = new Button(() =>
+            {
+                RegistUndo("create motion");
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent("State"), false, () =>
+                {
+                    var state = AssetUtil.CreateState(Asset, null);
+                    OnSelect(state.GUID);
+                    DirtyRepaint();
+                });
+                menu.AddItem(new GUIContent("BlendTree"), false, () =>
+                {
+                    var blendTree = AssetUtil.CreateBlendTree(Asset, null);
+                    OnSelect(blendTree.GUID);
+                    DirtyRepaint();
+                });
+                menu.ShowAsContext();
+            });
+            createButton.text = "创建动画";
+            toolbar.Add(createButton);
         }
 
         private void OnBinderPrefabChange(ChangeEvent<Object> evt)
