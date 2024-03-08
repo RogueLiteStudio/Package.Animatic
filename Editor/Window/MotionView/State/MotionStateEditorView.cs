@@ -11,20 +11,24 @@ namespace Animatic
         private readonly TextField nameField = new TextField("Name");
         private readonly ObjectField clipSelectField = new ObjectField("AnimationClip");
         private readonly Label clipInfoLabel = new Label();
+        private readonly PlayButtonList playButtonList = new PlayButtonList();
+        private readonly Toggle previewOriginal = new Toggle("预览原始动画");
         private readonly ScrollView clipScroll = new ScrollView(ScrollViewMode.Vertical);
         private readonly ClipGroupView groupView = new ClipGroupView();
         private readonly MotionStateClipView clipView = new MotionStateClipView();
         private readonly ScaleableClipView scaleableClipView = new ScaleableClipView();
         private readonly ListView clipListView = new ListView();
-        private readonly PlayButtonList playButtonList = new PlayButtonList();
 
+        private readonly IVisualElementScheduledItem playingTimer;
         private AnimaticMotionState motionState;
         private int selectClipIndex = -1;
-        private IVisualElementScheduledItem playingTimer;
         private bool isPlaying;
+        private double playTime;
+        private int scaleableFrameLength;
+        private bool isPreviewOriginal;
         public MotionStateEditorView()
         {
-            playingTimer = schedule.Execute(OnPlayingTimer).Every(15);
+            playingTimer = schedule.Execute(OnPlayingTimer).Every(10);
             playingTimer.Pause();
 
             style.flexDirection = FlexDirection.Column;
@@ -38,6 +42,12 @@ namespace Animatic
             Add(clipInfoLabel);
             playButtonList.OnPlayEvent += OnPlayEvent;
             Add(playButtonList);
+            previewOriginal.RegisterValueChangedCallback((evt) =>
+            {
+                isPreviewOriginal = evt.newValue;
+                OnFrameLocation(groupView.SelectFrame);
+            });
+            playButtonList.Add(previewOriginal);
             clipScroll.style.left = 0;
             clipScroll.style.right = 0;
             Add(clipScroll);
@@ -111,10 +121,62 @@ namespace Animatic
             Add(clipListView);
         }
 
+        protected override void OnDeActive()
+        {
+            playingTimer.Pause();
+            isPlaying = false;
+            playButtonList.SetPlayState(isPlaying);
+        }
+
 
         private void OnPlayingTimer(TimerState timerState)
         {
-            Debug.LogError($"{timerState.deltaTime}");
+            if (motionState == null || !motionState.Animation)
+            {
+                playingTimer.Pause();
+                return;
+            }
+            playTime += (timerState.deltaTime*0.001);
+            float frameTime = 1.0f / motionState.Animation.frameRate;
+            int frame = (int)(playTime / frameTime);
+            if (frame == 0)
+                return;
+            playTime %= frameTime;
+            frame += groupView.SelectFrame;
+            SetFrameLocation(frame, true);
+        }
+
+        private void SetFrameLocation(int frame, bool loopable = false)
+        {
+            int maxFrame = scaleableFrameLength;
+            if (isPreviewOriginal)
+            {
+                maxFrame = motionState.GetAnimationFrameCount();
+            }
+            if (frame > maxFrame)
+            {
+                if (loopable)
+                {
+                    if (groupView.SelectFrame < maxFrame)
+                    {
+                        frame = maxFrame;
+                    }
+                    else
+                    {
+                        frame = 0;
+                    }
+                }
+                else
+                {
+                    frame = maxFrame;
+                }
+            }
+            if (frame == 0)
+            {
+                playTime = 0;
+            }
+            groupView.SetFrameLocation(frame);
+            OnFrameLocation(frame);
         }
 
         private void OnPlayEvent(PlayButtonList.PlayEventType type)
@@ -122,22 +184,28 @@ namespace Animatic
             switch(type)
             {
                 case PlayButtonList.PlayEventType.FirstKey:
+                    SetFrameLocation(0);
                     break;
                 case PlayButtonList.PlayEventType.LastKey:
+                    SetFrameLocation(isPreviewOriginal ? motionState.GetAnimationFrameCount(): scaleableFrameLength);
                     break;
                 case PlayButtonList.PlayEventType.Play:
-                    //playingTimer.Resume();
+                    playingTimer.Resume();
                     isPlaying = true;
+                    playTime = 0;
                     playButtonList.SetPlayState(isPlaying);
                     break;
                 case PlayButtonList.PlayEventType.Pause:
                     playingTimer.Pause();
                     isPlaying = false;
+                    playTime = 0;
                     playButtonList.SetPlayState(isPlaying);
                     break;
                 case PlayButtonList.PlayEventType.PreKey:
+                    SetFrameLocation(groupView.SelectFrame - 1);
                     break;
                 case PlayButtonList.PlayEventType.NextKey:
+                    SetFrameLocation(groupView.SelectFrame + 1, true);
                     break;
             }
         }
@@ -170,8 +238,10 @@ namespace Animatic
             {
                 clipInfoLabel.text = "动画信息：";
             }
+            previewOriginal.SetValueWithoutNotify(isPreviewOriginal);
+            scaleableFrameLength = Mathf.RoundToInt(length * frameRate);
             clipSelectField.SetValueWithoutNotify(clip);
-            groupView.SetFrameInfo(Mathf.RoundToInt(length * frameRate), frameRate);
+            groupView.SetFrameInfo(scaleableFrameLength, frameRate);
             clipView.UpdateSelectClipIndex(motionState, selectClipIndex);
             scaleableClipView.UpdateClips(motionState, selectClipIndex);
             clipListView.itemsSource = motionState.Clips;

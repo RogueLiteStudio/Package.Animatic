@@ -155,7 +155,7 @@ namespace Animatic
         {
             if (currentEditorView != null && currentEditorView.viewDataKey != SelectedGUID)
             {
-                currentEditorView.style.display = DisplayStyle.None;
+                currentEditorView.SetActive(false);
                 currentEditorView = null;
             }
             if (Asset == null)
@@ -178,9 +178,9 @@ namespace Animatic
             }
             if (editorView == null)
                 return;
+            editorView.SetActive(true);
             editorView.UpdateView();
             currentEditorView = editorView;
-            currentEditorView.style.display = DisplayStyle.Flex;
         }
 
         private void OnCreateToolBar(Toolbar toolbar)
@@ -232,7 +232,7 @@ namespace Animatic
                 {
                     ClearSimulate();
                     SimulateObject = go;
-                    IsInstantiateObject = true;
+                    IsInstantiateObject = false;
                     Simulate.BindTarget(Asset, SimulateObject);
                 }
                 preViewButton.style.display = DisplayStyle.None;
