@@ -1,6 +1,7 @@
 using UnityEngine.Playables;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEditor;
 namespace Animatic
 {
     public class AnimaticSimulate : ScriptableObject
@@ -33,14 +34,45 @@ namespace Animatic
             var motion = GetMotion(motionName);
             if (motion == null)
                 return false;
-            if (!normal.Valid())
-                return false;
             GraphValidate(SimulateType.Normal);
             SimulateValidate(ref normal, motion, 0);
+            if (!normal.Valid())
+                return false;
             mixerPlayable.SetInputWeight(0, 1);
             normal.Simulate(motion, passTime, blendParam);
 
             return true;
+        }
+
+        public bool EvaluateOriginal(string motionName, float passTime, int index = 0)
+        {
+            if (!Asset || !Object)
+                return false;
+            var motion = GetMotion(motionName);
+            if (motion == null)
+                return false;
+            if (motion is AnimaticMotionState state)
+            {
+                if (!state.Animation)
+                    return false;
+                state.Animation.SampleAnimation(Object, passTime);
+                SceneView.RepaintAll();
+                return true;
+            }
+            else if (motion is AnimaticMotionBlendTree blendTree)
+            {
+                if (blendTree.Motions.Count == 0)
+                    return false;
+                index = Mathf.Clamp(index, 0, blendTree.Motions.Count - 1);
+                var clip = blendTree.Motions[index].Clip;
+                if (clip != null)
+                {
+                    clip.SampleAnimation(Object, passTime);
+                    SceneView.RepaintAll();
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool EvaluateCrossFade(string motionName, string crossFadeMotionName, float passTime, float crossDuration, float motionBlendTreeParam = 0, float crossFadeBlendTreeParam2 = 0)
@@ -78,6 +110,7 @@ namespace Animatic
             normal.Simulate(motion, Mathf.Min(passTime, motionLength), motionBlendTreeParam);
             float crossFadeTime = Mathf.Max(0, passTime - motionLength);
             crossFade.Simulate(crossFadeMotion, Mathf.Min(crossFadeTime, crossFadeLength), crossFadeBlendTreeParam2);
+            SceneView.RepaintAll();
             return true;
         }
 
@@ -129,10 +162,12 @@ namespace Animatic
             if (!playableGraph.IsValid())
             {
                 playableGraph = PlayableGraph.Create($"{Asset.name}_Simulate");
-                playableOutput = AnimationPlayableOutput.Create(playableGraph, "AnimaticSimulate", Object.GetComponentInChildren<Animator>());
+                var animator = Object.GetComponentInChildren<Animator>();
+                playableOutput = AnimationPlayableOutput.Create(playableGraph, "AnimaticSimulate", animator);
                 mixerPlayable = AnimationMixerPlayable.Create(playableGraph, type == SimulateType.CorssFade ? 2 : 1);
                 playableOutput.SetSourcePlayable(mixerPlayable);
                 playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+                playableGraph.Play();
             }
         }
 

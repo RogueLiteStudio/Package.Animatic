@@ -47,7 +47,7 @@ namespace Animatic
             Add(clipScroll);
             clipView.OnDragClipFrameOffset = OnDragClipFrameOffset;
             groupView.AddClipElement(clipView);
-            groupView.OnFrameLocation += OnFrameLocation;
+            groupView.OnFrameLocation += (f)=>SetFrameLocation(f);
 
             scaleableClipView.OnClipClick = (idx)=>
             {
@@ -66,7 +66,7 @@ namespace Animatic
                 {
                     RegistUndo("change scaleable clip");
                     motionState.Clips[idx] = clip;
-                    UpdateClipInfo();
+                    UpdateClipInfo(false);
                 };
                 view.Refresh(motionState.Clips[index], index, motionState.GetAnimationFrameCount());
             };
@@ -202,10 +202,21 @@ namespace Animatic
                     break;
             }
         }
-
+         
         private void OnFrameLocation(int frameIndex)
         {
-
+            if (motionState.Animation)
+            {
+                float time = groupView.SelectFrame / motionState.Animation.frameRate;
+                if (isPreviewOriginal)
+                {
+                    Simulate.EvaluateOriginal(motionState.Name, time);
+                }
+                else
+                {
+                    Simulate.Evaluate(motionState.Name, time);
+                }
+            }
         }
 
         protected override void OnUpdateView(AnimaticMotion motion)
@@ -217,11 +228,12 @@ namespace Animatic
             UpdateClipInfo();
         }
 
-        private void UpdateClipInfo()
+        private void UpdateClipInfo(bool rebindList = true)
         {
             var clip = motionState.Animation;
             float length = motionState.GetLength();
             float frameRate = clip ? clip.frameRate : 30;
+            scaleableFrameLength = Mathf.RoundToInt(length * frameRate);
             if (clip)
             {
                 clipInfoLabel.text = $"动画信息：时长 = {clip.length}, 帧率 = {clip.frameRate}， 帧数 = {motionState.GetAnimationFrameCount()}, {(clip.isHumanMotion ? "人形" : "非人形")}";
@@ -232,12 +244,12 @@ namespace Animatic
                 clipInfoLabel.text = "动画信息：";
             }
             previewOriginal.SetValueWithoutNotify(isPreviewOriginal);
-            scaleableFrameLength = Mathf.RoundToInt(length * frameRate);
             clipSelectField.SetValueWithoutNotify(clip);
-            groupView.SetFrameInfo(scaleableFrameLength, frameRate);
+            groupView.SetFrameInfo(Mathf.RoundToInt(length * frameRate), frameRate);
             clipView.UpdateSelectClipIndex(motionState, selectClipIndex);
             scaleableClipView.UpdateClips(motionState, selectClipIndex);
-            clipListView.itemsSource = motionState.Clips;
+            if (rebindList)
+                clipListView.itemsSource = motionState.Clips;
         }
 
         private void OnDragClipFrameOffset(ClipDragType type, int offset)

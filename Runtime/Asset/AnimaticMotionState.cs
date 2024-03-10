@@ -45,7 +45,7 @@ namespace Animatic
                         {
                             frame = frameCount - Clips[i].StartFrame;
                         }
-                        clipsLength += (frame * frameTime)/ Clips[i].Speed;
+                        clipsLength += (frame * frameTime) / Clips[i].Speed;
                     }
                     length = clipsLength;
                 }
