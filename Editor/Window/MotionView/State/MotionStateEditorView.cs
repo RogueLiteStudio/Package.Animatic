@@ -101,7 +101,7 @@ namespace Animatic
                 (motionState.Clips[to], motionState.Clips[from]) = (motionState.Clips[from], motionState.Clips[to]);
                 UpdateClipInfo();
             };
-            clipListView.selectedIndicesChanged += (list) =>
+            clipListView.onSelectedIndicesChange += (list) =>
             {
                 selectClipIndex = list.FirstOrDefault();
                 UpdateClipInfo();

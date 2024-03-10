@@ -7,9 +7,10 @@ namespace Animatic
     public class BlendTreeMotionEditorView : VisualElement
     {
         private readonly ObjectField clipSelector = new ObjectField();
-        private readonly FloatField thresholdField = new FloatField("Threshold");
+        private readonly FloatField thresholdField = new FloatField("Threshold", 10);
         private AnimaticMotionBlendTree.Motion data;
         private int index;
+        private bool valueHasChanged;
 
         public System.Action<int, AnimaticMotionBlendTree.Motion> OnChange;
 
@@ -22,7 +23,16 @@ namespace Animatic
             clipSelector.RegisterValueChangedCallback(OnClipChange);
             Add(clipSelector);
             thresholdField.labelElement.style.minWidth = 0;
+            thresholdField.style.minWidth = 150;
             thresholdField.RegisterValueChangedCallback(OnThresholdChange);
+            thresholdField.RegisterCallback<FocusOutEvent>((evt) => 
+            { 
+                if (valueHasChanged)
+                {
+                    OnChange?.Invoke(index, data);
+                    valueHasChanged = false;
+                }
+            });
             Add(thresholdField);
         }
 
@@ -37,7 +47,7 @@ namespace Animatic
         private void OnThresholdChange(ChangeEvent<float> evt)
         {
             data.Threshold = evt.newValue;
-            OnChange?.Invoke(index, data);
+            valueHasChanged = true;
         }
 
         private void OnClipChange(ChangeEvent<Object> evt)

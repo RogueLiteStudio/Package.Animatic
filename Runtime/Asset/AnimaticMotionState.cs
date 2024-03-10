@@ -12,8 +12,10 @@ namespace Animatic
     [System.Serializable]
     public class AnimaticMotionState : AnimaticMotion
     {
+
+        private readonly static ScaleableClip[] s_emptyClips = new ScaleableClip[0];
         public AnimationClip Animation;
-        public ScaleableClip[] Clips;
+        public ScaleableClip[] Clips = s_emptyClips;
 
         public int GetAnimationFrameCount()
         {

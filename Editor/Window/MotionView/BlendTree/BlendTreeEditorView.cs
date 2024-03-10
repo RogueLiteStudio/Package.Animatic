@@ -37,8 +37,7 @@ namespace Animatic
                 {
                     RegistUndo("change blendtree motion");
                     blendTree.Motions[idx] = clip;
-                    blendTree.Motions.Sort((a, b)=> a.Threshold.CompareTo(b.Threshold));
-
+                    blendTree.Motions.Sort((a, b) => a.Threshold.CompareTo(b.Threshold));
                     clipListView.itemsSource = blendTree.Motions.ToArray();
                     clipListView.Rebuild();
                 };
