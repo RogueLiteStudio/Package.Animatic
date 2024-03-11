@@ -39,14 +39,14 @@ namespace Animatic
                 {
                     endFrame = frameCount;
                 }
-                float clipLength = (endFrame - scaleableClip.StartFrame) * frameTime * scaleableClip.Speed;
-
-                if (clipLength >= passTime)
+                float clipLength = (endFrame - scaleableClip.StartFrame) * frameTime / scaleableClip.Speed;
+                if (clipLength < passTime)
                 {
-                    passTime /= motion.Clips[i].Speed;
-                    break;
+                    passTime -= clipLength;
+                    continue;
                 }
-                passTime -= clipLength;
+                passTime = scaleableClip.StartFrame * frameTime + passTime * scaleableClip.Speed;
+                break;
             }
             clipPlayable.SetTime(passTime);
         }

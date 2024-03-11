@@ -40,7 +40,8 @@ namespace Animatic
                 return false;
             mixerPlayable.SetInputWeight(0, 1);
             normal.Simulate(motion, passTime, blendParam);
-
+            playableGraph.Evaluate();
+            SceneView.RepaintAll();
             return true;
         }
 
@@ -110,6 +111,7 @@ namespace Animatic
             normal.Simulate(motion, Mathf.Min(passTime, motionLength), motionBlendTreeParam);
             float crossFadeTime = Mathf.Max(0, passTime - motionLength);
             crossFade.Simulate(crossFadeMotion, Mathf.Min(crossFadeTime, crossFadeLength), crossFadeBlendTreeParam2);
+            playableGraph.Evaluate();
             SceneView.RepaintAll();
             return true;
         }
@@ -163,11 +165,11 @@ namespace Animatic
             {
                 playableGraph = PlayableGraph.Create($"{Asset.name}_Simulate");
                 var animator = Object.GetComponentInChildren<Animator>();
+                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                 playableOutput = AnimationPlayableOutput.Create(playableGraph, "AnimaticSimulate", animator);
                 mixerPlayable = AnimationMixerPlayable.Create(playableGraph, type == SimulateType.CorssFade ? 2 : 1);
                 playableOutput.SetSourcePlayable(mixerPlayable);
                 playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
-                playableGraph.Play();
             }
         }
 
