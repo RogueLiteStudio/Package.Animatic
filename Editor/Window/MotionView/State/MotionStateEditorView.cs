@@ -62,13 +62,13 @@ namespace Animatic
             clipListView.bindItem = (element, index) =>
             {
                 var view = element as ScaleableClipEditorView;
+                view.Refresh(motionState.Clips[index], index, motionState.GetAnimationFrameCount());
                 view.OnValueChange = (idx, clip) =>
                 {
                     RegistUndo("change scaleable clip");
                     motionState.Clips[idx] = clip;
                     UpdateClipInfo(false);
                 };
-                view.Refresh(motionState.Clips[index], index, motionState.GetAnimationFrameCount());
             };
             clipListView.itemsAdded += (list) =>
             {

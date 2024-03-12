@@ -55,11 +55,6 @@ namespace Animatic
         }
         private void OnSpeedChange(ChangeEvent<float> evt)
         {
-            if (Mathf.Approximately(evt.newValue, 0))
-            {
-                speedField.SetValueWithoutNotify(Value.Speed);
-                return;
-            }
             Value.Speed = evt.newValue;
             OnValueChange?.Invoke(index, Value);
         }
