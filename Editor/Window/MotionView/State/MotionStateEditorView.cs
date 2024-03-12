@@ -62,6 +62,8 @@ namespace Animatic
             clipListView.bindItem = (element, index) =>
             {
                 var view = element as ScaleableClipEditorView;
+                if (index >= motionState.Clips.Length)
+                    return;
                 view.Refresh(motionState.Clips[index], index, motionState.GetAnimationFrameCount());
                 view.OnValueChange = (idx, clip) =>
                 {
@@ -73,38 +75,40 @@ namespace Animatic
             clipListView.itemsAdded += (list) =>
             {
                 RegistUndo("add scaleable clip");
-                int frameLength = motionState.GetAnimationFrameCount();
-                int select = Mathf.Clamp(groupView.SelectFrame, 0, frameLength - 1);
-                int count = frameLength - select;
-                motionState.Clips = motionState.Clips.Append(new ScaleableClip { StartFrame = select,  Speed = 1, FrameCount = count }).ToArray();
+                var newClips = new List<ScaleableClip>(motionState.Clips);
+                foreach (var idx in list)
+                {
+                    int frameLength = motionState.GetAnimationFrameCount();
+                    int select = Mathf.Clamp(groupView.SelectFrame, 0, frameLength - 1);
+                    int count = frameLength - select;
+                    newClips.Insert(idx, new ScaleableClip { StartFrame = select, Speed = 1, FrameCount = count });
+                }
+                motionState.Clips = newClips.ToArray();
                 UpdateClipInfo();
             };
             clipListView.itemsRemoved += (list) =>
             {
                 RegistUndo("remove scaleable clip");
-                List<ScaleableClip> clips = new List<ScaleableClip>();
-                for (int i = 0; i < motionState.Clips.Length; ++i)
+                list = list.OrderByDescending(it => it);
+                List<ScaleableClip> clips = new List<ScaleableClip>(motionState.Clips);
+                foreach (var idx in list)
                 {
-                    if (!list.Contains(i))
-                    {
-                        clips.Add(motionState.Clips[i]);
-                    }
+                    clips.RemoveAt(idx);
                 }
                 motionState.Clips = clips.ToArray();
                 selectClipIndex = 0;
-                UpdateClipInfo();
-                clipListView.Rebuild();
+                UpdateClipInfo(false);
             };
             clipListView.itemIndexChanged += (from, to) =>
             {
                 RegistUndo("reorder scaleable clip");
                 (motionState.Clips[to], motionState.Clips[from]) = (motionState.Clips[from], motionState.Clips[to]);
-                UpdateClipInfo();
+                UpdateClipInfo(false);
             };
-            clipListView.onSelectedIndicesChange += (list) =>
+            clipListView.selectedIndicesChanged += (list) =>
             {
                 selectClipIndex = list.FirstOrDefault();
-                UpdateClipInfo();
+                UpdateClipInfo(false);
             };
             clipListView.reorderable = true;
             clipListView.showAddRemoveFooter = true;
@@ -207,7 +211,7 @@ namespace Animatic
         {
             if (motionState.Animation)
             {
-                float time = groupView.SelectFrame / motionState.Animation.frameRate;
+                float time = frameIndex / motionState.Animation.frameRate;
                 if (isPreviewOriginal)
                 {
                     Simulate.EvaluateOriginal(motionState.Name, time);
@@ -249,7 +253,10 @@ namespace Animatic
             clipView.UpdateSelectClipIndex(motionState, selectClipIndex);
             scaleableClipView.UpdateClips(motionState, selectClipIndex);
             if (rebindList)
+            {
                 clipListView.itemsSource = motionState.Clips;
+                clipListView.Rebuild();
+            }
         }
 
         private void OnDragClipFrameOffset(ClipDragType type, int offset)

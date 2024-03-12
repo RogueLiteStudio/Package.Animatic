@@ -7,19 +7,32 @@ namespace Animatic
     public class BlendTreeEditorView : MotionEditorView
     {
         private readonly PlayButtonList playButtonList = new PlayButtonList();
+        private readonly FloatField preViewParamField = new FloatField("预览参数");
         private readonly ScrollView clipScroll = new ScrollView(ScrollViewMode.Vertical);
         private readonly ClipGroupView groupView = new ClipGroupView();
         private readonly ListView clipListView = new ListView();
+        private readonly List<BlendClipView> blendClips = new List<BlendClipView>();
 
         private AnimaticMotionBlendTree blendTree;
 
+        private float frameRate = 30;
+        private int frameLenth = 0;
+
         private bool isPlaying;
         private double playTime;
+        private float preViewParam;
 
         protected override AnimaticMotion Motion => blendTree;
 
         public BlendTreeEditorView()
         {
+            playButtonList.OnPlayEvent = OnPlayEvent;
+            Add(playButtonList);
+            preViewParamField.UnregisterValueChangedCallback((evt) => 
+            { 
+                preViewParam = evt.newValue;
+                OnFrameLocation(groupView.SelectFrame);
+            });
             //轨道条区域
             clipScroll.style.left = 0;
             clipScroll.style.right = 0;
@@ -32,40 +45,37 @@ namespace Animatic
             clipListView.bindItem = (element, index) =>
             {
                 var view = element as BlendTreeMotionEditorView;
+                if (index >= blendTree.Motions.Count)
+                    return;
                 view.UpdateView(index, blendTree.Motions[index]);
                 view.OnChange = (idx, clip) =>
                 {
                     RegistUndo("change blendtree motion");
                     blendTree.Motions[idx] = clip;
                     blendTree.Motions.Sort((a, b) => a.Threshold.CompareTo(b.Threshold));
-                    clipListView.itemsSource = blendTree.Motions.ToArray();
+                    UpdateClipView();
                     clipListView.Rebuild();
                 };
             };
             clipListView.itemsAdded += (list) =>
             {
                 RegistUndo("add blendtree motion");
-                blendTree.Motions.Add(new AnimaticMotionBlendTree.Motion());
+                foreach (var idx in list)
+                {
+                    blendTree.Motions.Insert(idx, new AnimaticMotionBlendTree.Motion());
+                }
                 blendTree.Motions.Sort((a, b) => a.Threshold.CompareTo(b.Threshold));
-
-                clipListView.itemsSource = blendTree.Motions.ToArray();
+                UpdateClipView();
                 clipListView.Rebuild();
             };
             clipListView.itemsRemoved += (list) =>
             {
-                RegistUndo("remove blendtree motion");
-                List<AnimaticMotionBlendTree.Motion> clips = new List<AnimaticMotionBlendTree.Motion>();
-                for (int i = 0; i < blendTree.Motions.Count; ++i)
+                list = list.OrderByDescending(it => it);
+                foreach (var idx in list)
                 {
-                    if (!list.Contains(i))
-                    {
-                        clips.Add(blendTree.Motions[i]);
-                    }
+                    blendTree.Motions.RemoveAt(idx);
                 }
-                blendTree.Motions.Clear();
-                blendTree.Motions.AddRange(clips);
-
-                clipListView.itemsSource = blendTree.Motions.ToArray();
+                UpdateClipView();
                 clipListView.Rebuild();
             };
             clipListView.showAddRemoveFooter = true;
@@ -75,13 +85,65 @@ namespace Animatic
             Add(clipListView);
 
         }
-
+        protected override void OnDeActive()
+        {
+            isPlaying = false;
+            playButtonList.SetPlayState(isPlaying);
+        }
         protected override void OnUpdateView(AnimaticMotion motion)
         {
             blendTree = motion as AnimaticMotionBlendTree;
             clipListView.itemsSource = blendTree.Motions.ToArray();
+            UpdateClipView();
         }
 
+        protected void UpdateClipView()
+        {
+            var m = blendTree.Motions.Where(it => it.Clip).OrderBy(it => it.Clip.length).FirstOrDefault();
+            frameLenth = m.Clip ? (int)(m.Clip.length * frameRate) : 0;
+            frameRate = m.Clip ? m.Clip.frameRate : 30;
+            groupView.SetFrameInfo(frameLenth, frameRate);
+            int validCount = 0;
+            for (int i = 0; i < blendTree.Motions.Count; ++i)
+            {
+                var e = blendTree.Motions[i];
+                if (m.Clip)
+                {
+                    validCount++;
+                    var clipView = GetClipView(i);
+                    clipView.style.display = DisplayStyle.Flex;
+                    clipView.UpdateClip(e.Clip);
+                }
+            }
+        }
+
+        private BlendClipView GetClipView(int index)
+        {
+            if (index < blendClips.Count)
+                return blendClips[index];
+            BlendClipView clipView = new BlendClipView();
+            clipView.style.marginTop = 2;
+            blendClips.Add(clipView);
+            groupView.AddClipElement(clipView);
+            return clipView;
+        }
+
+        protected override void OnPlayingTimer(TimerState timerState)
+        {
+            if (blendTree == null || frameLenth == 0)
+            {
+                playingTimer.Pause();
+                return;
+            }
+            playTime += (timerState.deltaTime * 0.001);
+            float frameTime = 1.0f / frameRate;
+            int frame = (int)(playTime / frameTime);
+            if (frame == 0)
+                return;
+            playTime %= frameTime;
+            frame += groupView.SelectFrame;
+            SetFrameLocation(frame, true);
+        }
         private void OnPlayEvent(PlayButtonList.PlayEventType type)
         {
             switch (type)
@@ -90,7 +152,7 @@ namespace Animatic
                     SetFrameLocation(0);
                     break;
                 case PlayButtonList.PlayEventType.LastKey:
-                    //SetFrameLocation(isPreviewOriginal ? motionState.GetAnimationFrameCount() : scaleableFrameLength);
+                    SetFrameLocation(frameLenth);
                     break;
                 case PlayButtonList.PlayEventType.Play:
                     playingTimer.Resume();
@@ -115,19 +177,13 @@ namespace Animatic
 
         private void SetFrameLocation(int frame, bool loopable = false)
         {
-            /*
-            int maxFrame = scaleableFrameLength;
-            if (isPreviewOriginal)
-            {
-                maxFrame = motionState.GetAnimationFrameCount();
-            }
-            if (frame > maxFrame)
+            if (frame > frameLenth)
             {
                 if (loopable)
                 {
-                    if (groupView.SelectFrame < maxFrame)
+                    if (groupView.SelectFrame < frameLenth)
                     {
-                        frame = maxFrame;
+                        frame = frameLenth;
                     }
                     else
                     {
@@ -136,7 +192,7 @@ namespace Animatic
                 }
                 else
                 {
-                    frame = maxFrame;
+                    frame = frameLenth;
                 }
             }
             if (frame == 0)
@@ -145,11 +201,16 @@ namespace Animatic
             }
             groupView.SetFrameLocation(frame);
             OnFrameLocation(frame);
-            */
         }
+
         private void OnFrameLocation(int frameIndex)
         {
-
+            if (frameLenth > 0)
+            {
+                float time = frameIndex / frameRate;
+                Simulate.Evaluate(blendTree.Name, time, preViewParam);
+            }
         }
+
     }
 }
