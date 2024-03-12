@@ -28,11 +28,14 @@ namespace Animatic
         {
             playButtonList.OnPlayEvent = OnPlayEvent;
             Add(playButtonList);
-            preViewParamField.UnregisterValueChangedCallback((evt) => 
+            preViewParamField.labelElement.style.minWidth = 0;
+            preViewParamField.style.minWidth = 150;
+            preViewParamField.RegisterValueChangedCallback((evt) => 
             { 
                 preViewParam = evt.newValue;
                 OnFrameLocation(groupView.SelectFrame);
             });
+            playButtonList.Add(preViewParamField);
             //轨道条区域
             clipScroll.style.left = 0;
             clipScroll.style.right = 0;

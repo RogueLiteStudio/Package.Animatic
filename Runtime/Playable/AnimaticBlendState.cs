@@ -113,8 +113,8 @@ namespace Animatic
                 if (value >= Motions[i].Threshold && value <= Motions[i+1].Threshold)
                 {
                     float range = Motions[i + 1].Threshold - Motions[i].Threshold;
-                    float w1 = (value - Motions[i].Threshold) / range;
-                    float w2 = 1 - w1;
+                    float w2 = (value - Motions[i].Threshold) / range;
+                    float w1 = 1 - w2;
                     mixerPlayable.SetInputWeight(i, w1);
                     mixerPlayable.SetInputWeight(i + 1, w2);
                     ++i;

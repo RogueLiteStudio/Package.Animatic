@@ -21,6 +21,7 @@ namespace Animatic
             clipSelector.objectType = typeof(AnimationClip);
             clipSelector.allowSceneObjects = false;
             clipSelector.RegisterValueChangedCallback(OnClipChange);
+            clipSelector.style.minWidth = 150;
             Add(clipSelector);
             thresholdField.labelElement.style.minWidth = 0;
             thresholdField.style.minWidth = 150;

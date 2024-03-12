@@ -138,7 +138,7 @@ namespace Animatic
             }
             else if (motion is AnimaticMotionBlendTree)
             {
-                simulate = new AnimaticClipSimulate();
+                simulate = new AnimaticBlendTreeSimulate();
                 simulate.Build(playableGraph, motion);
                 simulate.Connect(mixerPlayable, inputIndex);
             }

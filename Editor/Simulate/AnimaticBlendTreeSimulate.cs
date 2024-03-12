@@ -20,7 +20,8 @@ namespace Animatic
         {
             for (int i = 0; i < clipPlayables.Length; ++i)
             {
-                clipPlayables[i].Destroy();
+                if (clipPlayables[i].IsValid())
+                    clipPlayables[i].Destroy();
             }
             clipPlayables = empty;
             if (mixerPlayable.IsValid())
@@ -79,8 +80,16 @@ namespace Animatic
             float nextWeight = 0;
             if (preIndex >=0 && nextIndex >= 0)
             {
-                preWeight = (blendParam - preValue) / (nextValue - preValue);
-                nextWeight = 1 - preWeight;
+                if (preIndex != nextIndex)
+                {
+                    nextWeight = (blendParam - preValue) / (nextValue - preValue);
+                    preWeight = 1 - nextWeight;
+                }
+                else
+                {
+                    preWeight = 1;
+                    nextWeight = 1;
+                }
             }
             else if (preIndex >= 0)
             {
