@@ -46,11 +46,12 @@ namespace Animatic
             mixerTransition.Player = this;
             var playableOutput = AnimationPlayableOutput.Create(graph, "AnimaticPlayer", animator);
             playableOutput.SetSourcePlayable(transitionPlayable);
-            if (string.IsNullOrEmpty(defaultState))
+            graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
+            graph.Play();
+            if (!string.IsNullOrEmpty(defaultState))
             {
                 Play(defaultState);
             }
-            graph.Play();
         }
 
         private void OnDestroy()
@@ -161,5 +162,17 @@ namespace Animatic
             }
             return 0;
         }
+
+
+#if UNITY_EDITOR
+        [ContextMenu("SwitchDefultState")]
+        private void SwitchDefultState()
+        {
+            if (!string.IsNullOrWhiteSpace(defaultState))
+            {
+                Play(defaultState);
+            }
+        }
+#endif
     }
 }

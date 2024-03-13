@@ -55,6 +55,11 @@ namespace Animatic
                 enable = true;
             }
             state.Connect(Mixer, currentInput);
+            if (!enable)
+            {
+                Mixer.SetInputWeight(currentInput, 1);
+            }
+            state.Play();
         }
 
 

@@ -29,24 +29,27 @@ namespace Animatic
             var clip = motion.Animation;
             if (clip == null)
                 return;
-            float frameTime = 1 / clip.frameRate;
-            int frameCount = Mathf.RoundToInt(clip.length * clip.frameRate);
-            for (int i = 0; i < motion.Clips.Length; ++i)
+            if (motion.Clips != null)
             {
-                var scaleableClip = motion.Clips[i];
-                int endFrame = scaleableClip.StartFrame + scaleableClip.FrameCount;
-                if (endFrame > frameCount)
+                float frameTime = 1 / clip.frameRate;
+                int frameCount = Mathf.RoundToInt(clip.length * clip.frameRate);
+                for (int i = 0; i < motion.Clips.Length; ++i)
                 {
-                    endFrame = frameCount;
+                    var scaleableClip = motion.Clips[i];
+                    int endFrame = scaleableClip.StartFrame + scaleableClip.FrameCount;
+                    if (endFrame > frameCount)
+                    {
+                        endFrame = frameCount;
+                    }
+                    float clipLength = (endFrame - scaleableClip.StartFrame) * frameTime / scaleableClip.Speed;
+                    if (clipLength < passTime)
+                    {
+                        passTime -= clipLength;
+                        continue;
+                    }
+                    passTime = scaleableClip.StartFrame * frameTime + passTime * scaleableClip.Speed;
+                    break;
                 }
-                float clipLength = (endFrame - scaleableClip.StartFrame) * frameTime / scaleableClip.Speed;
-                if (clipLength < passTime)
-                {
-                    passTime -= clipLength;
-                    continue;
-                }
-                passTime = scaleableClip.StartFrame * frameTime + passTime * scaleableClip.Speed;
-                break;
             }
             clipPlayable.SetTime(passTime);
         }

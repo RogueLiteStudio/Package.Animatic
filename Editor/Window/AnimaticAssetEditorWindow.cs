@@ -43,12 +43,15 @@ namespace Animatic
         private ScrollView leftScrollView;
         private ScrollView rightScrollView;
         private RadioButtonList buttonList;
+        private TableButton tableButton;
 
         private MotionEditorView currentEditorView;
+        private TransitionEditorView transitionView;
         private Dictionary<string, MotionEditorView> editorViews = new Dictionary<string, MotionEditorView>();
 
         public Vector2 ListScrollPos;
         public Vector2 ListScrollPos2;
+        public int SelectTable;
 
         public void CreateGUI()
         {
@@ -56,22 +59,28 @@ namespace Animatic
             OnCreateToolBar(toolbar);
             rootVisualElement.Add(toolbar);
             var split = new TwoPaneSplitView(0, 200, TwoPaneSplitViewOrientation.Horizontal);
+            rootVisualElement.Add(split);
             //左侧列表
             var listView = new VisualElement();
+            split.Add(listView);
             listView.style.flexDirection = FlexDirection.Column;
             listView.Add(new Label("动画列表").SetTextAlign(TextAnchor.MiddleCenter).SetTextStyle(FontStyle.Bold));
             listView.Add(leftScrollView = new ScrollView(ScrollViewMode.Vertical));
             leftScrollView.scrollOffset = ListScrollPos;
             leftScrollView.Add(buttonList = new RadioButtonList());
             buttonList.OnSelect = OnSelect;
-            split.Add(listView);
             
             //右侧编辑器
-            split.Add(rightScrollView = new ScrollView(ScrollViewMode.Vertical));
+            var element = new VisualElement();
+            split.Add(element);
+            element.style.flexDirection = FlexDirection.Column;
+            element.Add(tableButton = new TableButton());
+            tableButton.UpdateView(new string[] { "基础", "融合" });
+            tableButton.OnSelectChange = OnTableSelect;
+            element.Add(rightScrollView = new ScrollView(ScrollViewMode.Vertical));
             rightScrollView.scrollOffset = ListScrollPos2;
             rightScrollView.style.paddingLeft = 5;
-            rootVisualElement.Add(split);
-
+            rightScrollView.Add(transitionView = new TransitionEditorView());
             DirtyRepaint();
         }
 
@@ -107,6 +116,7 @@ namespace Animatic
             preViewButton.style.display = SimulateObject ? DisplayStyle.None : DisplayStyle.Flex;
             RefrehButtonList();
             RefrshEditorView();
+            tableButton.Select(SelectTable);
         }
 
         private void RefrehButtonList()
@@ -132,8 +142,21 @@ namespace Animatic
             RefrshEditorView();
         }
 
+        private void OnTableSelect(int idx)
+        {
+            if (SelectTable != idx)
+            {
+                SelectTable = idx;
+                ListScrollPos2 = Vector2.zero;
+                rightScrollView.scrollOffset = ListScrollPos2;
+                RefrshEditorView();
+            }
+        }
+
         private void RefrshEditorView()
         {
+            tableButton.style.display = Asset && !string.IsNullOrEmpty(SelectedGUID) ? DisplayStyle.Flex : DisplayStyle.None;
+            transitionView.style.display = DisplayStyle.None;
             if (currentEditorView != null && currentEditorView.viewDataKey != SelectedGUID)
             {
                 currentEditorView.SetActive(false);
@@ -171,8 +194,14 @@ namespace Animatic
             }
             if (editorView == null)
                 return;
-            editorView.SetActive(true);
-            editorView.UpdateView();
+            bool isShowNormal = SelectTable == 0;
+            editorView.SetActive(isShowNormal);
+            transitionView.style.display = isShowNormal ? DisplayStyle.None : DisplayStyle.Flex;
+            if (isShowNormal)
+                editorView.UpdateView();
+            else
+                transitionView.UpdateView(motion);
+
             currentEditorView = editorView;
         }
 
@@ -277,6 +306,7 @@ namespace Animatic
             if (Asset)
                 RegistUndo("change asset", false);
             Asset = asset;
+            transitionView.Asset = asset;
             DirtyRepaint();
         }
 

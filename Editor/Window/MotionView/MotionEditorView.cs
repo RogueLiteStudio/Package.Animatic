@@ -16,6 +16,7 @@ namespace Animatic
         protected virtual AnimaticMotion Motion => null;
 
         protected readonly TextField nameField = new TextField("Name");
+        private readonly Toggle loopField = new Toggle("Loop");
 
         public MotionEditorView()
         {
@@ -25,6 +26,8 @@ namespace Animatic
             style.flexDirection = FlexDirection.Column;
             nameField.RegisterValueChangedCallback(OnNameChange);
             Add(nameField);
+            loopField.RegisterValueChangedCallback(OnLoopChange);
+            Add(loopField);
         }
         private void OnNameChange(ChangeEvent<string> evt)
         {
@@ -33,10 +36,17 @@ namespace Animatic
             OnNameChanged?.Invoke();
         }
 
+        private void OnLoopChange(ChangeEvent<bool> evt)
+        {
+            RegistUndo("change loop");
+            Motion.Loop = evt.newValue;
+        }
+
         public void UpdateView()
         {
             var motion = Asset.Motions.FirstOrDefault(it=>it.GUID == viewDataKey);
             nameField.SetValueWithoutNotify(motion.Name);
+            loopField.SetValueWithoutNotify(motion.Loop);
             OnUpdateView(motion);
         }
 
