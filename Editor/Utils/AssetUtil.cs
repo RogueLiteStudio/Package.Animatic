@@ -35,6 +35,15 @@ namespace Animatic
             }
             return null;
         }
+        public static AnimaticMotion FindMotionByName(this AnimaticAsset asset, string name)
+        {
+            foreach (var motion in asset.Motions)
+            {
+                if (motion.Name == name)
+                    return motion;
+            }
+            return null;
+        }
 
         public static bool HasName(this AnimaticAsset asset, string name)
         {

@@ -200,7 +200,11 @@ namespace Animatic
             if (isShowNormal)
                 editorView.UpdateView();
             else
+            {
+                transitionView.Asset = Asset;
+                transitionView.Simulate = Simulate;
                 transitionView.UpdateView(motion);
+            }
 
             currentEditorView = editorView;
         }
@@ -306,7 +310,6 @@ namespace Animatic
             if (Asset)
                 RegistUndo("change asset", false);
             Asset = asset;
-            transitionView.Asset = asset;
             DirtyRepaint();
         }
 

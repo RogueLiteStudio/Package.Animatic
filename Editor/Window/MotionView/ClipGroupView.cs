@@ -93,6 +93,7 @@ namespace Animatic
                     element.SetFrameWidth(frameWidth);
                 }
             }
+            MarkDirtyRepaint();
         }
     }
 }

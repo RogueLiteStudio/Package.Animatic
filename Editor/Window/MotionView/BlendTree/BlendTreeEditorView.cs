@@ -73,6 +73,7 @@ namespace Animatic
             };
             clipListView.itemsRemoved += (list) =>
             {
+                RegistUndo("remove blendtree motion");
                 list = list.OrderByDescending(it => it);
                 foreach (var idx in list)
                 {

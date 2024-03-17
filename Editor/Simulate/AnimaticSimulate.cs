@@ -93,13 +93,13 @@ namespace Animatic
             float crossFadeLength = crossFadeMotion.GetLength();
             crossDuration = Mathf.Min(crossDuration, motionLength);
             float motionWeight = 1;
+            float unCrossTime = motionLength - crossDuration;
             if (passTime > motionLength)
             {
                 motionWeight = 0;
             }
             else
             {
-                float unCrossTime = motionLength - crossDuration;
                 if (passTime > unCrossTime)
                 {
                     motionWeight = 1 - (passTime - unCrossTime) / crossDuration;
@@ -109,7 +109,7 @@ namespace Animatic
             mixerPlayable.SetInputWeight(0, motionWeight);
             mixerPlayable.SetInputWeight(1, crossFadeWeight);
             normal.Simulate(motion, Mathf.Min(passTime, motionLength), motionBlendTreeParam);
-            float crossFadeTime = Mathf.Max(0, passTime - motionLength);
+            float crossFadeTime = Mathf.Max(0, passTime - unCrossTime);
             crossFade.Simulate(crossFadeMotion, Mathf.Min(crossFadeTime, crossFadeLength), crossFadeBlendTreeParam2);
             playableGraph.Evaluate();
             SceneView.RepaintAll();
