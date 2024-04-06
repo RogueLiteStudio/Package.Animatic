@@ -31,6 +31,8 @@ namespace Animatic
         private AnimaticPlayingState playingState;
         public AnimaticPlayingState PlayingState=>playingState;
 
+        public AnimaticAsset CurrentAsset=>asset;
+
         public float Speed => speed;
 
         private void Start()
@@ -122,6 +124,10 @@ namespace Animatic
             if (this.asset == asset)
                 return;
             this.asset = asset;
+#if UNITY_EDITOR
+            if (!Application.IsPlaying(gameObject))
+                return;
+#endif
             waitDestoryState.AddRange(states.Values);
             states.Clear();
         }
