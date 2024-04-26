@@ -69,6 +69,7 @@ namespace Animatic
             leftScrollView.scrollOffset = ListScrollPos;
             leftScrollView.Add(buttonList = new RadioButtonList());
             buttonList.OnSelect = OnSelect;
+            buttonList.OnElementMenu = OnElementMenu;
             
             //右侧编辑器
             var element = new VisualElement();
@@ -137,9 +138,44 @@ namespace Animatic
             if (guid == SelectedGUID)
                 return;
             RegistUndo("select motion");
-            leftScrollView.scrollOffset = Vector2.zero;
             SelectedGUID = guid;
             RefrshEditorView();
+        }
+
+        private void OnElementMenu(GenericMenu menu, string key)
+        {
+            menu.AddItem(new GUIContent("删除"), false, () => 
+            {
+                RegistUndo("delete motion");
+                string preKey = SelectedGUID;
+                foreach (var it in Asset.Motions)
+                {
+                    if (it.GUID == preKey)
+                        continue;
+                    else if(it.GUID == key)
+                        break;
+                    preKey = it.GUID;
+                }
+                if (preKey != key)
+                {
+                    SelectedGUID = preKey;
+                    RefrshEditorView();
+                }
+                int index = Asset.States.FindIndex(it => it.GUID == key);
+                if (index >= 0)
+                {
+                    Asset.States.RemoveAt(index);
+                }
+                else
+                {
+                    index = Asset.BlendTree.FindIndex(it => it.GUID == key);
+                    if (index >= 0)
+                    {
+                        Asset.BlendTree.RemoveAt(index);
+                    }           
+                }
+                RefrehButtonList();
+            });
         }
 
         private void OnTableSelect(int idx)
