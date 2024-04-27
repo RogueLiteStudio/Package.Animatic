@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 using VisualElementExtern;
 namespace Animatic
 {
+    [EditorWindowTitle(title = "动画编辑器")]
     public class AnimaticAssetEditorWindow : EditorWindow
     {
         [UnityEditor.Callbacks.OnOpenAsset(0)]
@@ -159,7 +160,10 @@ namespace Animatic
                 if (preKey != key)
                 {
                     SelectedGUID = preKey;
-                    RefrshEditorView();
+                }
+                else
+                {
+                    SelectedGUID = null;
                 }
                 int index = Asset.States.FindIndex(it => it.GUID == key);
                 if (index >= 0)
@@ -172,9 +176,10 @@ namespace Animatic
                     if (index >= 0)
                     {
                         Asset.BlendTree.RemoveAt(index);
-                    }           
+                    }
                 }
                 RefrehButtonList();
+                RefrshEditorView();
             });
         }
 
