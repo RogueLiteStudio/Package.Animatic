@@ -58,7 +58,10 @@ namespace Animatic
 
         private void OnDestroy()
         {
-            graph.Destroy();
+            if (graph.IsValid())
+            {
+                graph.Destroy();
+            }
         }
 
         private void OnEnable()
